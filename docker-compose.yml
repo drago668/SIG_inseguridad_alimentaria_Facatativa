@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: sig-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - sig-postgres-data:/var/lib/postgresql
+
+volumes:
+  sig-postgres-data:
+    external: true

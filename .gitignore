@@ -1,0 +1,19 @@
+# Entornos virtuales
+venv/
+.env/
+.venv/
+env/
+.env
+
+# Historial vscode
+.history/
+
+# Archivos de configuración local
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
