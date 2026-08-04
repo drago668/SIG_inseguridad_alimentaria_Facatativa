@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,170 +6,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIG Facatativá - Cundinamarca</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            overflow: hidden; 
-        }
-        #header {
-            background-color: #1e293b;
-            color: white;
-            padding: 12px 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            height: 31px;
-        }
-        #map {
-            width: 100vw;
-            height: calc(100vh - 55px); 
-        }
-    </style>
+    <link 
+    rel="stylesheet" 
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+    crossorigin="anonymous" />
+    
+    <link rel="stylesheet" href="{% static 'visor_grafico/css/estilos.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"> </script>
 </head>
-<body>
-
-    <div id="header">
+<body >
+    <div id="header" class="hidden md:flex p-7 h-14 items-center w-full flex-row justify-between bg-blue-500 text-white shadow-md">
         <h2 style="margin: 0; font-size: 1.2rem;">Sistema de Información Geográfica - Facatativá (Cundinamarca)</h2>
+        <div class="flex gap-4">
+            <a href="#" class="hover:underline">Filtros</a>
+            <a href="#" class="hover:underline">Consultas espaciales</a>
+            <a href="#" class="hover:underline">Leyenda</a>
+            <a href="#" class="hover:underline">Capas activas</a>
+            <a href="#" class="hover:underline">Herramients de dibujo y medicion</a>
+            <a href="#" class="hover:underline">perfil</a>
+        </div>
     </div>
 
-    <!-- Contenedor del mapa -->
-    <div id="map"></div>
+    <!-- contenedor del cuerpo -->
+    <div class="flex flex-row w-full h-[calc(100vh-56px) overflow-hidden min-h-screen">
+
+        <aside id="sidebar" class="flex w-80 h-300 bg-blue-300 p-6 flex-col shadow-inner transition-all duration-300"> 
+            <h3 class="font-bold text-lg text-blue-900 bg-blue-500/50">Panel de Capas</h3>
+            <div class="flex flex-col gap-3">
+                <label class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    <input type="checkbox" id="chk-municipio" checked class="w-4 h-4 accent-emerald-600">
+                    <span>Límite Municipal</span>
+                </label>
+                <label class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    <input type="checkbox" id="chk-veredas" checked class="w-4 h-4 accent-emerald-600">
+                    <span>Limite Veredal</span>
+                </label>
+                <label class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    <input type="checkbox" id="chk-vias" checked class="w-4 h-4 accent-emerald-600">
+                    <span>Red Vial</span>
+                </label>
+            </div>
+
+            <div class="flex flex-col gap-3 p-1">
+                <h3 class="font-bold text-lg text-blue-900 bg-blue-500/50">Panel Vias</h3>
+                <label for="vias-slct" class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">Vias</label>
+                <select name="vi" id="vias-slct">
+                    <option value="" selected disabled hidden>Selecciona el tipo de via...</option>
+                    <option value="motorway">autopista</option>
+                    <option value="trunk">carreteras importantes</option>
+                    <option value="primary">carreteras primarias</option>
+                    <option value="secondary">carreteras secundarias</option>
+                    <option value="tertiary">carreteras terciarias</option>
+                    <option value="unclassified">carreteras locales</option>
+                    <option value="residential">calles residenciales</option>
+                </select>
+            </div>
 
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <div class="flex flex-col gap-3 p-1">
+                <h3 class="font-bold w-full text-lg text-blue-900 bg-blue-500/50">Panel Municipios</h3>
+                <label for="municipios-slct" class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    Municipios
+                </label>
+                <select name="" id="municipios-slct" >
+                    <option value=""> Selecciona un municipio </option>
+                    {% for municipio in municipios %}
+                        <option value="{{municipio.mpio_cdpmp}}">
+                            {{municipio.mpio_cnmbr}}
+                        </option>
+                    {% empty %}
+                        <option value="">No hay municipios registrados</option>
+                    {% endfor %}
+                </select>
+            </div>
 
+
+            <div class="flex flex-col gap-3 p-1">
+                <h3 class="font-bold w-full text-lg text-blue-900 bg-blue-500/50">Panel Veredas</h3>
+                <label for="veredas-slct" class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    Veredas
+                </label>
+                <select name="" id="veredas-slct" >
+                    <option value=""> Selecciona una vereda </option>
+                    {% for vereda in veredas %}
+                        <option value="{{vereda.codigo_ver}}">
+                            {{vereda.nombre_ver}}
+                        </option>
+                    {% empty %}
+                        <option value="">No hay veredas registradas</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen bg-gray-100"> 
+            <a id="colapse" class="cursor-pointer inline-block p-2 hover:bg-blue-300 rounded transition-colors" >
+                    <img id='arrow' src="{% static 'visor_grafico/img/left-arrow.png' %}" alt="">
+            </a>
+            <div id="map" class="flex w-full h-full ">
+            </div>
+        </main>
+
+    </div> 
+
+    <!--variables dinamicas para acceder desde map.js-->
     <script>
-
-        const map = L.map('map').setView([4.813, -74.354], 13);
-
-        // 2. Capa base de OpenStreetMap
-        //L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //    maxZoom: 19,
-        //    attribution: '&copy; OpenStreetMap contributors | DANE Colombia'
-        //}).addTo(map);
-        // 2. Definir las diferentes capas base usando sus URLs de servidores de mosaicos
-        
-        const openStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors | DANE Colombia',
-            maxZoom: 19
-        });
-        const cartoPositron = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        });
-
-        // Opción B: OpenTopoMap (Relieve y topografía)
-        const openTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data: &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org">CC-BY-SA</a>)',
-            maxZoom: 17
-        });
-
-        // Opción C: CartoDB Dark Matter (Estilo oscuro ideal para datos nocturnos o brillantes)
-        const cartoDark = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        });
-        const cartoVoyager = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_labels_under/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        });
-
-        // 3. Añadir una capa por defecto al mapa para que no aparezca en blanco al cargar
-        cartoPositron.addTo(map);
-
-        // 4. Crear un objeto con las capas base para permitirle al usuario alternar entre ellas
-        const baseMaps = {
-            "CartoDB Positron": cartoPositron,
-            "OpenStreetMap":openStreetMap,
-            "OpenTopoMap (Relieve)": openTopo,
-            "CartoDB Dark Matter": cartoDark,
-            "CartoDB Voyager": cartoVoyager,
-        };
-
-        L.control.layers(baseMaps).addTo(map);
-
-        const estiloFacatativa = {
-            color: "#059669",      
-            weight: 3,             
-            opacity: 0.7,
-            fillColor: "#10b981",  
-            fillOpacity: 0.1      
-        };
-
-        function estiloSegunVia(feature) {
-            const fclass = feature.properties.fclass;
-            switch (fclass) {
-                case 'motorway':
-                    return {color: '#D73027', weight:5, opacity:1};
-                case 'trunk':
-                    return { color: '#F46D43', weight: 5, opacity: 1 }; 
-                case 'primary':
-                    return { color: '#FDAE61', weight: 4, opacity: 0.7 };
-                case 'secondary':
-                    return { color: '#A6D96A', weight: 3, opacity: 0.6 };
-                case 'tertiary':
-                    return { color: '#1A9850', weight: 3, opacity: 0.6 }; 
-                case 'unclassified':
-                    return { color: '#66C2A5', weight: 2, opacity: 0.5 }; 
-                case 'residential':
-                    return { color: '#74ADD1', weight: 1, opacity: 0.5 };
-                default:
-                    return { color: '#BDBDBD', weight: 1, opacity: 0.3 };
-            }
-        }
-
-        // 3. Cargar Capa 1: Límite Municipal de Facatativá
-        fetch("{% url 'vias_geojson' %}")
-            .then(response => {
-                if (!response.ok) throw new Error("Error en la respuesta de la API de vías");
-                return response.json();
-            })
-            .then(data => {
-                L.geoJSON(data, {
-                    style: estiloSegunVia,
-                    onEachFeature: function (feature, layer) {
-                        const props = feature.properties;
-                        const nombreVia = props.name || "Vía sin nombre";
-                        const velocidad = props.maxspeed ? `${props.maxspeed} km/h` : "No registrada";
-                        layer.bindPopup(`
-                            <b>Vía:</b> ${nombreVia}<br>
-                            <b>Tipo:</b> ${props.fclass}<br>
-                            <b>Velocidad Máx:</b> ${velocidad}
-                        `);
-                    }
-                }).addTo(map);
-            })
-            .catch(err => console.error("Error al cargar las vías:", err));
-
-        fetch("{% url 'facatativa_geojson' %}")
-            .then(response => {
-                if (!response.ok) throw new Error("Error en la respuesta de la API del municipio");
-                return response.json();
-            })
-            .then(data => {
-                const geojsonLayer = L.geoJSON(data, {
-                    style: estiloFacatativa,
-                    onEachFeature: function (feature, layer) {
-                        const props = feature.properties;
-                        layer.bindPopup(`
-                            <div style="text-align: center;">
-                                <h3 style="margin:0; color:#059669;">${props.mpio_cnmbr}</h3>
-                                <p style="margin: 5px 0;"><b>Código DANE:</b> ${props.mpio_cdpmp}</p>
-                                <p style="margin: 0;"><b>Departamento:</b> Cundinamarca (${props.dpto_ccdgo})</p>
-                            </div>
-                        `);
-                    }
-                }).addTo(map);
-
-                // Auto-ajustar el zoom del mapa al tamaño del municipio
-                map.fitBounds(geojsonLayer.getBounds());
-            })
-            .catch(error => console.error("Error cargando la capa espacial:", error));
+        const urlViasGeoJSON = "{% url 'vias_geojson' %}"
+        const urlFacatativaGeoJSON = "{% url 'facatativa_geojson'%}"
+        const urlVeredasGeoJSON ="{% url 'veredas_geojson' %}"
     </script>
+
+    <script 
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+    crossorigin="anonymous"></script>
+
+    <script src="{% static 'visor_grafico/js/map.js'%}"></script>
+
 </body>
 </html>

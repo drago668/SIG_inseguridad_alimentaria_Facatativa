@@ -64,3 +64,26 @@ class Vias(models.Model):
 
         def __str__(self):
             return f"{self.name}"
+
+
+class Veredas(models.Model):
+    ogc_fid = models.AutoField(primary_key=True)
+    geom = models.MultiPolygonField(srid=900914, blank=True, null=True)
+    fid = models.FloatField(blank=True, null=True)
+    objectid = models.CharField(blank=True, null=True)
+    dptompio = models.CharField(blank=True, null=True)
+    codigo_ver = models.CharField(blank=True, null=True)
+    nom_dep = models.CharField(blank=True, null=True)
+    nomb_mpio = models.CharField(blank=True, null=True)
+    nombre_ver = models.CharField(blank=True, null=True)
+    vigencia = models.CharField(blank=True, null=True)
+    fuente = models.CharField(blank=True, null=True)
+    descripcio = models.CharField(blank=True, null=True)
+    seudonimos = models.CharField(blank=True, null=True)
+    area_ha = models.FloatField(blank=True, null=True)
+    cod_dpto = models.CharField(blank=True, null=True)
+    observacio = models.CharField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'veredas'
