@@ -9,16 +9,16 @@ window.addEventListener('resize', (e) =>{
 
     if (esPantallaGrande) {
         console.log("El usuario está en una PC o tablet grande");
-        arrowIcon.classList.remove('hidden');
+        //arrowIcon.classList.remove('hidden');
         // Aquí pones el código para acomodar tu barra lateral en PC
     } else {
         console.log("El usuario está en un celular");
         sidebar.classList.add('hidden');
-        arrowIcon.classList.add('hidden');5
+        //arrowIcon.classList.add('hidden');5
     }
 });
 
-
+/*
 colapse.addEventListener('click', () => {
     sidebar.classList.toggle('hidden');
 
@@ -29,7 +29,7 @@ colapse.addEventListener('click', () => {
     }, 300); 
     
 });
-
+ */
 
 const map = L.map('map').setView([4.813, -74.354], 13);
 
@@ -119,8 +119,8 @@ fetch(urlViasGeoJSON)
                 layer.bindPopup(`
                     <b>Vía:</b> ${nombreVia}<br>
                     <b>Tipo:</b> ${props.fclass}<br>
-                    <b>Velocidad Máx:</b> ${velocidad}
-                `);
+                    <b>Velocidad Máx:</b> ${velocidad}`
+                );
             }
         }).addTo(map);
     })

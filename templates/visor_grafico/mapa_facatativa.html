@@ -101,9 +101,6 @@
         </aside>
 
         <main class="flex-1 min-h-screen bg-gray-100"> 
-            <a id="colapse" class="cursor-pointer inline-block p-2 hover:bg-blue-300 rounded transition-colors" >
-                    <img id='arrow' src="{% static 'visor_grafico/img/left-arrow.png' %}" alt="">
-            </a>
             <div id="map" class="flex w-full h-full ">
             </div>
         </main>
@@ -113,7 +110,8 @@
     <!--variables dinamicas para acceder desde map.js-->
     <script>
         const urlViasGeoJSON = "{% url 'vias_geojson' %}"
-        const urlFacatativaGeoJSON = "{% url 'facatativa_geojson'%}"
+        const urlFacatativaGeoJSON = "{% url 'facatativa_geojson' %}"
+        const urlMunicipioGeoJSON ="{% url 'facatativa_geojson' %}"
         const urlVeredasGeoJSON ="{% url 'veredas_geojson' %}"
     </script>
 
@@ -122,7 +120,9 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
     crossorigin="anonymous"></script>
 
-    <script src="{% static 'visor_grafico/js/map.js'%}"></script>
+    <!--<script src="{% static 'visor_grafico/js/map.js'%}"></script>-->
+    <script type="module" src="{% static 'visor_grafico/js/main.js' %}"></script>
+
 
 </body>
 </html>
