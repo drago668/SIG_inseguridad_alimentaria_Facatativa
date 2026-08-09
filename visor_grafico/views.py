@@ -87,16 +87,26 @@ def vias_facatativa_geojson(request):
 
 def veredas_facatativa_geojson(request):
     try:
+
+        mpio = request.GET.get('mpio', None)
+        if mpio != None:
+            municipio = Municipios.objects.filter(mpio_cdpmp= mpio).first()
+        else:
+            municipio = Municipios.objects.filter(mpio_cdpmp='25269').first()
+        
+        if not municipio or not municipio.geom:
+            return JsonResponse({'error': 'No se encontró el municipio'}, status=404)
+    
         vda = request.GET.get('vda', None)
         if vda != None:
             veredas_qs = Veredas.objects.filter(
-                dptompio='25269',
                 codigo_ver=vda,
+                dptompio=municipio.mpio_cdpmp
                 )
         elif(vda == '0'):
-            veredas_qs = Veredas.objects.filter(dptompio='25269')
+            veredas_qs = Veredas.objects.filter(dptompio=municipio.mpio_cdpmp)
         else:
-            veredas_qs = Veredas.objects.filter(dptompio='25269')
+            veredas_qs = Veredas.objects.filter(dptompio=municipio.mpio_cdpmp)
 
         ref_origen = SpatialReference(9377)   # Origen Único de Colombia
         ref_destino = SpatialReference(4326)  # WGS84 para Leaflet

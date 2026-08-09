@@ -74,12 +74,13 @@ fetch(urlMunicipioGeoJSON)
 slctMunicipio.addEventListener('change', (e) => {
     const slcted = e.target.value;
     console.log("Municipio seleccionado:", slcted);
-    const urlFiltrada= `${urlMunicipioGeoJSON}?mpio=${slcted}`;
+    const urlFiltradaMpios= `${urlMunicipioGeoJSON}?mpio=${slcted}`;
+    const urlFiltradaVias= `${urlViasGeoJSON}?mpio=${slcted}`;
+    const urlFiltradaVdas= `${urlVeredasGeoJSON}?mpio=${slcted}`;
 
-    fetch(urlFiltrada)
+    fetch(urlFiltradaMpios)
         .then(response => {
             if (!response.ok) throw new Error("Error en la API de municipios");
-            console.log("error");
             return response.json();
         })
         .then(data => {
@@ -89,6 +90,28 @@ slctMunicipio.addEventListener('change', (e) => {
             capaMunicipios = crearCapaMunicipios(data);
             capaMunicipios.addTo(map);
             map.fitBounds(capaMunicipios.getBounds());
+        })
+        .catch(err => console.error("Error al filtrar los muncipios: ", err));
+    fetch(urlFiltradaVias)
+        .then(response => {
+            if (!response.ok) throw new Error("Error en la API de vias");
+            return response.json();
+        })
+        .then(data =>{
+            if(capaVias) map.removeLayer(capaVias);
+            capaVias =crearCapaVias(data);
+            capaVias.addTo(map);
+        })
+        .catch(err => console.error("Error al filtrar las vias: ", err));
+    fetch(urlFiltradaVdas)
+        .then(response => {
+            if (!response.ok) throw new Error("Error en la API de vias");
+            return response.json();
+        })
+        .then(data =>{
+            if(capaVeredas) map.removeLayer(capaVeredas);
+            capaVeredas = crearCapaVeredas(data);
+            capaVeredas.addTo(map);
         })
         .catch(err => console.error("Error al filtrar los muncipios: ", err));
 });
@@ -138,8 +161,6 @@ slctVia.addEventListener('change', (e) => {
         })
         .catch(err => console.error("Error al filtrar las vias:", err));
 });
-
-
 
 
 // activar o desactivar capas
