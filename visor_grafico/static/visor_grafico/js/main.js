@@ -77,16 +77,24 @@ slctMunicipio.addEventListener('change', (e) => {
     const urlFiltrada= `${urlMunicipioGeoJSON}?mpio=${slcted}`;
 
     fetch(urlFiltrada)
-        .then(res =>json())
+        .then(response => {
+            if (!response.ok) throw new Error("Error en la API de municipios");
+            console.log("error");
+            return response.json();
+        })
         .then(data => {
-
             if (capaMunicipios) map.removeLayer(capaMunicipios);
+            console.log("funciono:", data);
 
             capaMunicipios = crearCapaMunicipios(data);
             capaMunicipios.addTo(map);
+            map.fitBounds(capaMunicipios.getBounds());
         })
         .catch(err => console.error("Error al filtrar los muncipios: ", err));
 });
+
+
+
 
 
 // filtrar capa veredas con base en los select
@@ -96,7 +104,10 @@ slctVereda.addEventListener('change', (e) => {
     const urlFiltrada= `${urlVeredasGeoJSON}?vda=${slcted}`;
 
     fetch(urlFiltrada)
-        .then(res =>json())
+        .then(response => {
+            if (!response.ok) throw new Error("Error en la API de Veredas: ");
+            return response.json();
+        })
         .then(data => {
 
             if (capaVeredas) map.removeLayer(capaVeredas);
@@ -111,10 +122,13 @@ slctVereda.addEventListener('change', (e) => {
 slctVia.addEventListener('change', (e) => {
     const slcted = e.target.value;
     console.log("Via seleccionada:", slcted);
-    const urlFiltrada= `${urlViasGeoJSON}?via=${slcted}`;
+    const urlFiltrada= `${urlViasGeoJSON}?tipo=${slcted}`;
 
     fetch(urlFiltrada)
-        .then(res =>json())
+        .then(response => {
+            if (!response.ok) throw new Error("Error en la API de Veredas: ");
+            return response.json();
+        })
         .then(data => {
 
             if (capaVias) map.removeLayer(capaVias);
