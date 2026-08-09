@@ -88,7 +88,7 @@ export function crearCapaVeredas(data) {
                 <b>Vereda:</b> ${props.nombre_ver || "Vereda sin nombre"}<br>
                 <b>Departamento:</b> ${props.nom_dep ? `${props.nom_dep} (${props.cod_dpto})` : "Departamento no disponible"}<br>
                 <b>Municipio:</b> ${props.nom_mpio}<br>
-                <b>area:</b> ${props.area_ha ? `${props.area_ha} h`:"No existe informacion"}<br>
+                <b>Area:</b> ${props.area_ha ? `${props.area_ha} h`:"No existe informacion"}<br>
             `);
         }
     })

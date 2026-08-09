@@ -11,13 +11,21 @@ from .models import Veredas
 
 def mapa_facatativa_page(request):
     listado_municipios = Municipios.objects.order_by('mpio_cnmbr')
-    listado_veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio='25269')
+    listado_veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio='25269').values('codigo_ver','nombre_ver')
 
     contexto = {
         'municipios': listado_municipios,
         'veredas': listado_veredas,
     }
     return render(request, 'visor_grafico/mapa_facatativa.html', contexto)
+
+
+def obtener_veredas_por_municipio(request):
+    mpio = request.GET.get("mpio", None)
+    veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio= mpio).values('codigo_ver','nombre_ver')
+    return JsonResponse(list(veredas), safe=False)
+
+
 
 def facatativa_geojson_api(request):
     """

@@ -77,6 +77,7 @@ slctMunicipio.addEventListener('change', (e) => {
     const urlFiltradaMpios= `${urlMunicipioGeoJSON}?mpio=${slcted}`;
     const urlFiltradaVias= `${urlViasGeoJSON}?mpio=${slcted}`;
     const urlFiltradaVdas= `${urlVeredasGeoJSON}?mpio=${slcted}`;
+    const urlFilterVdas= `${urlVeredasMpio}?mpio=${slcted}`;
 
     fetch(urlFiltradaMpios)
         .then(response => {
@@ -114,6 +115,22 @@ slctMunicipio.addEventListener('change', (e) => {
             capaVeredas.addTo(map);
         })
         .catch(err => console.error("Error al filtrar los muncipios: ", err));
+    
+    fetch(urlFilterVdas)
+        .then(response => response.json())
+        .then(data => {
+            console.log("veredas encontradas: ", data);
+            const selectVereda = document.getElementById('select-veredas');
+            if (slctVereda) {
+                slctVereda.innerHTML = '<option value="">Seleccione una vereda</option>';
+                data.forEach(vereda => {
+                    const option = document.createElement('option');
+                    option.value = vereda.codigo_ver;
+                    option.textContent = vereda.nombre_ver;
+                    slctVereda.appendChild(option);
+                });
+            }
+        }).catch(error => console.error('Error cargando veredas:', error));
 });
 
 
