@@ -17,3 +17,6 @@ env/
 *.pyd
 *.swp
 *.swo
+
+# Archivos de pruebas
+*.csv

@@ -78,6 +78,15 @@ class CombustibleParaCocinar(models.Model):
         db_table = 'combustible_para_cocinar'
 
 
+class Corte(models.Model):
+    id_corte = models.IntegerField(primary_key=True)
+    nombre_corte = models.CharField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'corte'
+
+
 class CursoVida(models.Model):
     id_curso_vida = models.IntegerField(primary_key=True)
     nombre_curso = models.CharField(max_length=255, blank=True, null=True)
@@ -134,20 +143,25 @@ class FuenteObtencionAgua(models.Model):
 
 
 class Hogar(models.Model):
-    id_hogar = models.IntegerField(primary_key=True)
-    estrato_socioeconomico = models.IntegerField(blank=True, null=True)
+    id = models.AutoField(primary_key=True, db_column='id_hogar')
     agua_llega_7_dias = models.BooleanField(blank=True, null=True)
     cocina = models.BooleanField(blank=True, null=True)
     nevera = models.BooleanField(blank=True, null=True)
-    alcantarillado = models.BooleanField(blank=True, null=True)
-    acueducto = models.BooleanField(blank=True, null=True)
-    jefe_hogar = models.ForeignKey('JefeHogar', models.DO_NOTHING, db_column='jefe_hogar', blank=True, null=True)
+    jefe_hogar = models.ForeignKey('JefeHogar', models.DO_NOTHING, db_column='jefe_hogar', blank=True, null=True, related_name='hogares_asociados' )
     afiliacion_seguridad_social = models.ForeignKey(AfiliacionSeguridadSocial, models.DO_NOTHING, db_column='afiliacion_seguridad_social', blank=True, null=True)
     zona_geografica = models.ForeignKey('ZonaGeografica', models.DO_NOTHING, db_column='zona_geografica', blank=True, null=True)
     fuente_agua = models.ForeignKey(FuenteObtencionAgua, models.DO_NOTHING, db_column='fuente_agua', blank=True, null=True)
     tratamiento_agua = models.ForeignKey('TratamientoAguaConsumo', models.DO_NOTHING, db_column='tratamiento_agua', blank=True, null=True)
     combustible_para_cocinar = models.ForeignKey(CombustibleParaCocinar, models.DO_NOTHING, db_column='combustible_para_cocinar', blank=True, null=True)
-    material_vivienda = models.ForeignKey('MaterialVivienda', models.DO_NOTHING, db_column='material_vivienda', blank=True, null=True)
+    total_personas_hogar = models.IntegerField(blank=True, null=True)
+    corte = models.ForeignKey(Corte, models.DO_NOTHING, db_column='corte', blank=True, null=True)
+    tipo_vivienda = models.ForeignKey('TipoVivienda', models.DO_NOTHING, db_column='tipo_vivienda', blank=True, null=True)
+    llave = models.CharField(blank=True, null=True)
+    hogar = models.CharField(blank=True, null=True)
+    vivienda = models.ForeignKey('Vivienda', models.DO_NOTHING, db_column='vivienda', blank=True, null=True)
+
+
+    
 
     class Meta:
         managed = False
@@ -155,12 +169,18 @@ class Hogar(models.Model):
 
 
 class JefeHogar(models.Model):
-    id_jefe_hogar = models.IntegerField(primary_key=True)
-    ingreso_mensual = models.FloatField(blank=True, null=True)
+    id = models.AutoField(primary_key=True, db_column='id_jefe_hogar')
     desempleo_larga_duracion = models.BooleanField(blank=True, null=True)
     trabajo_informal = models.BooleanField(blank=True, null=True)
     actividad = models.ForeignKey(ActividadUltimoMes, models.DO_NOTHING, db_column='actividad', blank=True, null=True)
     nivel_educativo = models.ForeignKey(CatNivelEducativo, models.DO_NOTHING, db_column='nivel_educativo', blank=True, null=True)
+    id_sexo = models.ForeignKey('Sexo', models.DO_NOTHING, db_column='id_sexo', blank=True, null=True)
+    grupo_sisben = models.CharField(blank=True, null=True)
+    nivel_sisben = models.IntegerField(blank=True, null=True)
+    corte = models.ForeignKey(Corte, models.DO_NOTHING, db_column='corte', blank=True, null=True)
+    llave = models.CharField(blank=True, null=True)
+    hogar = models.CharField(blank=True, null=True)
+    orden = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -250,6 +270,15 @@ class Sexo(models.Model):
         db_table = 'sexo'
 
 
+class TipoVivienda(models.Model):
+    id_tipo_vivienda = models.IntegerField(primary_key=True)
+    nombre_tipo_vivienda = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tipo_vivienda'
+
+
 class TratamientoAguaConsumo(models.Model):
     id_tratamiento_agua = models.IntegerField(primary_key=True)
     nombre_tratamiento = models.CharField(max_length=255, blank=True, null=True)
@@ -259,19 +288,33 @@ class TratamientoAguaConsumo(models.Model):
         db_table = 'tratamiento_agua_consumo'
 
 
+class Vivienda(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id_vivienda')
+    material_vivienda = models.ForeignKey(MaterialVivienda, models.DO_NOTHING, db_column='material_vivienda', blank=True, null=True)
+    alcantarillado = models.BooleanField(blank=True, null=True)
+    acueducto = models.BooleanField(blank=True, null=True)
+    corte = models.ForeignKey(Corte, models.DO_NOTHING, db_column='corte', blank=True, null=True)
+    llave = models.CharField(blank=True, null=True, db_column='llave')
+
+    class Meta:
+        managed = False
+        db_table = 'vivienda'
+
+
 class ZonaGeografica(models.Model):
     id_zona_geografica = models.IntegerField(primary_key=True)
     nombre_zona = models.CharField(max_length=255, blank=True, null=True)
     casos_inseguridad_alimentaria = models.IntegerField(blank=True, null=True)
+    fex = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
 
     municipio = models.ForeignKey(
         Municipios,
         to_field='mpio_cdpmp',
         db_column='municipio', # Nombre exacto de la columna VARCHAR(5) en la BD
-        on_delete=models.CASCADE
+        on_delete=models.DO_NOTHING
     )
+    
 
     class Meta:
         managed = False
         db_table = 'zona_geografica'
-
