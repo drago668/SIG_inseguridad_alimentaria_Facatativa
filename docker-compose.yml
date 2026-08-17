@@ -11,6 +11,17 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - sig-postgres-data:/var/lib/postgresql
+  web:
+    build: .  # Busca el Dockerfile en la carpeta actual
+    command: python manage.py runserver 0.0.0.0:8000  # Comando para desarrollo local
+    volumes:
+      - .:/app  # Sincroniza tu código en tiempo real
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@sig-postgres:5432/${POSTGRES_DB}
+    depends_on:
+      - db 
 
 volumes:
   sig-postgres-data:
