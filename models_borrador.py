@@ -387,6 +387,8 @@ class Hogar(models.Model):
     llave = models.CharField(blank=True, null=True)
     hogar = models.CharField(blank=True, null=True)
     vivienda = models.ForeignKey('Vivienda', models.DO_NOTHING, db_column='vivienda', blank=True, null=True)
+    cantidad_ninos = models.IntegerField(blank=True, null=True)
+    cantidad_adultos_mayores = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -744,7 +746,7 @@ class ZonaGeografica(models.Model):
     nombre_zona = models.CharField(max_length=255, blank=True, null=True)
     casos_inseguridad_alimentaria = models.IntegerField(blank=True, null=True)
     municipio = models.ForeignKey(Municipios, models.DO_NOTHING, db_column='municipio', to_field='mpio_cdpmp', blank=True, null=True)
-    fex = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
+    fex = models.DecimalField(max_digits=16, decimal_places=12, blank=True, null=True)
 
     class Meta:
         managed = False

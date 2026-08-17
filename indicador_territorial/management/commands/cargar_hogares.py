@@ -44,6 +44,9 @@ class Command(BaseCommand):
             col_combustible = "HOG017" if "HOG017" in columnas else "hog017" # Ajusta según tu CSV
             col_zona_geografica = "ZONA" if "ZONA" in columnas else "zona"
 
+            col_ninos= "cantidad_ninos" if "cantidad_ninos" in columnas else "COLUMNA_NINOS"
+            col_adultos_mayores= "cantidad_adultos_mayores" if "cantidad_adultos_mayores" in columnas else "CANTIDAD_ADULTOS_MAYORES"
+
             contador_hogares = 0
             contador_omitidos = 0
 
@@ -97,10 +100,12 @@ class Command(BaseCommand):
                             "tratamiento_agua": tratamiento_obj,
                             "combustible_para_cocinar": combustible_obj,
                             "agua_llega_7_dias": True if fila.get(col_agua_7_dias) == '1' else False,
+                            "cantidad_ninos": fila.get(col_ninos),
+                            "cantidad_adultos_mayores":fila.get(col_adultos_mayores),
                             "cocina": True if fila.get(col_cocina) == '1' else False,
                             "nevera": True if fila.get(col_nevera) == '1' else False,
                             "total_personas_hogar": int(fila[col_personas_total]) if fila.get(col_personas_total) else 1,
-                            "zona_geografica": zona_obj
+                            "zona_geografica": zona_obj,
                         }
                     )
 

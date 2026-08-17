@@ -68,8 +68,6 @@ fetch(urlMunicipioGeoJSON)
     .catch(err => console.error("Error al cargar lo(s) Municipios: ", err));
 
 
-
-
 // filtrar capa municipios con base en los select
 slctMunicipio.addEventListener('change', (e) => {
     const slcted = e.target.value;
@@ -132,9 +130,6 @@ slctMunicipio.addEventListener('change', (e) => {
             }
         }).catch(error => console.error('Error cargando veredas:', error));
 });
-
-
-
 
 
 // filtrar capa veredas con base en los select

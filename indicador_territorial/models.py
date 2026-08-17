@@ -159,9 +159,8 @@ class Hogar(models.Model):
     llave = models.CharField(blank=True, null=True)
     hogar = models.CharField(blank=True, null=True)
     vivienda = models.ForeignKey('Vivienda', models.DO_NOTHING, db_column='vivienda', blank=True, null=True)
-
-
-    
+    cantidad_ninos = models.IntegerField(blank=True, null=True)
+    cantidad_adultos_mayores = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False

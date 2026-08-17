@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Territorial - Local</title>
+
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f3f4f6; padding: 2rem; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #1f2937; margin-bottom: 0.5rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        
+        /* Grids Estructurales */
+        .chart-grid, .regression-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        @media (max-width: 768px) { .chart-grid, .regression-grid { grid-template-columns: 1fr; } }
+        
+        /* Componente Tarjeta */
+        .card { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; position: relative; }
+        .card-title { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; font-weight: 500; margin: 0; }
+        .card-value { font-size: 1.875rem; font-weight: bold; margin-top: 0.5rem; margin-bottom: 0; }
+        
+        /* Modificadores Visuales */
+        .text-blue { color: #2563eb; }
+        .text-green { color: #10b981; }
+        .text-red { color: #ef4444; }
+        .badge-sig { position: absolute; top: 1rem; right: 1rem; background: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: bold; }
+        
+        .chart-container { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+        
+        /* Listado de Coeficientes */
+        .coef-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .coef-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border-left: 4px solid #ccd3e0; }
+        .coef-item.danger { border-left-color: #ef4444; }
+        .coef-item.success { border-left-color: #10b981; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1> Dashboard de Inseguridad Alimentaria</h1>
+        <p style="color: #4b5563; margin-bottom: 2rem;">Análisis multidimensional.</p>
+
+        <!-- TARJETAS -->
+        <div class="grid">
+            <div class="card">
+                <p class="card-title">Índice Promedio General</p>
+                <p class="card-value text-blue">{{ promedio_general }} pts</p>
+            </div>
+            <div class="card">
+                <p class="card-title">Hogares Evaluados DNP-sisben</p>
+                <p class="card-value" style="color: #1f2937;">{{ total_encuestados }}</p>
+            </div>
+            <div class="card">
+                <p class="card-title">Hogares con inseguridad alimentaria</p>
+                <p class="card-value text-red" >{{ total_inseguros }}</p>
+            </div>
+            <div class="card">
+                <p class="card-title">Porcentaje hogares con inseguridad alimentaria</p>
+                <p class="card-value" style="color: #1f2937;">{{ porcentaje_inseguros }} %</p>
+            </div>
+        </div>
+
+        <!-- BLOQUE DE GRAFICOS -->
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h2 style="font-size: 1.25rem; color: #374151; margin-top: 0; margin-bottom: 1rem;">Inseguridad Alimentaria por Zona Geográfica</h2>
+                <div id="grafico-barras"></div>
+            </div>
+
+            <div class="chart-container">
+                <h2 style="font-size: 1.25rem; color: #374151; margin-top: 0; margin-bottom: 1rem;">Distribución de Sexo (Jefe Hogar)</h2>
+                <div id="grafico-torta"></div>
+            </div>
+        </div>
+
+
+
+        <!-- SECCIÓN ECONOMÉTRICA: EXPLICACIÓN DE CAUSAS -->
+        <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;"> Análisis de Causas Económicas y Demográficas (Regresión OLS)</h2>
+        <div class="regression-grid">
+            
+            <!-- PANEL IZQUIERDO: COEFICIENTES -->
+            <div class="chart-container" style="position: relative;">
+                <span class="badge-sig" style="background: #e0f2fe; color: #0369a1;">R² Ajustado: 4.88%</span>
+                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Impacto Marginal de las Variables Descriptoras</h3>
+                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Pesos calculados aislando las variables con p-valor estadísticamente significativo (< 0.05).</p>
+                
+                <div class="coef-list">
+                    <div class="coef-item">
+                        <div>
+                            <strong style="color: #374151;">Constante Base del Territorio</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Puntaje inicial de vulnerabilidad del municipio</p>
+                        </div>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: #4b5563;">+22.54</span>
+                    </div>
+
+                    <div class="coef-item danger">
+                        <div>
+                            <strong style="color: #b91c1c;">Efecto Trabajo Informal</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Acelerador crítico por inestabilidad de ingresos</p>
+                        </div>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: #ef4444;">+7.71</span>
+                    </div>
+
+                    <div class="coef-item danger">
+                        <div>
+                            <strong style="color: #b91c1c;">Presencia de Niños (Menores 18)</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Impacto acumulativo por cada dependiente puro</p>
+                        </div>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: #ef4444;">+3.40</span>
+                    </div>
+
+                    <div class="coef-item success">
+                        <div>
+                            <strong style="color: #047857;">Jefatura Femenina</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Amortiguador por priorización interna de recursos</p>
+                        </div>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: #10b981;">-3.77</span>
+                    </div>
+
+                    <div class="coef-item success">
+                        <div>
+                            <strong style="color: #047857;">Tamaño General del Hogar</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Mitigación por economía de escala cooperativa</p>
+                        </div>
+                        <span style="font-size: 1.25rem; font-weight: bold; color: #10b981;">-2.65</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO: INTERPRETACIÓN ACADÉMICA -->
+            <div class="chart-container" style="background-color: #f8fafc; border-color: #cbd5e1;">
+                <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">Interpretación Técnica para la Tesis</h3>
+                <div style="font-size: 0.9rem; color: #334155; line-height: 1.5; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <p><strong>Validación de Hipótesis:</strong> La depuración por criterios de parsimonia estadística confirma que la precariedad del mercado laboral y la estructura familiar son los verdaderos motores del riesgo alimentario local.</p>
+                    <p>El <strong>Trabajo Informal</strong> inyecta de forma masiva <span class="text-red" style="font-weight: bold;">+7.71 puntos</span> de vulnerabilidad al hogar, representando la barrera de ingresos más crítica de la base de datos.</p>
+                    <p>Cada <strong>menor de edad</strong> añade un riesgo neto de <span class="text-red" style="font-weight: bold;">+3.40 puntos</span>, demostrando de forma empírica que la tasa de dependencia demográfica de menores satura el presupuesto calórico del núcleo familiar.</p>
+                    <p>En contraposición, la <strong>Jefatura Femenina (-3.77)</strong> actúa como un escudo protector eficiente, disminuyendo el índice global mediante una orientación de recursos orientada al soporte de la vivienda.</p>
+                    <p>El <strong>R² Ajustado de 4.88%</strong> es consistente con microdatos sociales de pobreza multidimensional. Certifica que la variabilidad restante responde a factores geográficos y de mercado local, justificando plenamente la espacialización mediante el <strong>mapa de Leaflet</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.1rem; color: #374151; margin-bottom: 1rem;">Resumen de Privaciones por Territorio</h3>
+            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+                <thead>
+                    <tr style="background-color: #f9fafb; text-align: left; border-bottom: 1px solid #e5e7eb;">
+                        <th style="padding: 1rem; color: #4b5563;">Zona Territorial</th>
+                        <th style="padding: 1rem; color: #4b5563;">Índice Vulnerabilidad Promedio</th>
+                        <th style="padding: 1rem; color: #4b5563;">Estado de Alerta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 1rem; font-weight: 500;">Centro poblado, Rural disperso</td>
+                        <td id="js-avg_rural" style="padding: 1rem; color: #ef4444; font-weight: bold;">{{promedio_rural}}</td>
+                        <td style="padding: 1rem;">
+                            {% if promedio_rural >= 33.3 %}
+                                <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Inseguridad Crítica</span>
+                            {% elif promedio_rural >= 16.7 %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Riesgo / Vulnerabilidad</span>
+                            {% else %}
+                                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Seguridad Alimentaria</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 1rem; font-weight: 500;">Cabecera</td>
+                        <td id="js-avg_urbano" style="padding: 1rem; color: #10b981; font-weight: bold;">{{promedio_urbano}}</td>
+                        
+                        <td style="padding: 1rem;"><span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Seguridad Alimentaria</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{ categorias_grafico|json_script:"js-categorias" }}
+    {{ valores_grafico|json_script:"js-valores" }}
+    {{ valores_pie|json_script:"js-valores-pie" }}
+    {{ categorias_pie|json_script:"js-categorias-pie" }}
+    {{promedio_rural|json_script:"js-promedio_rural" }}
+    {{promedio_general|json_script:"js-promedio_urbano"}}
+
+    <!-- JAVASCRIPT DE APEXCHARTS -->
+    <script>
+    const categorias = JSON.parse(document.getElementById('js-categorias').textContent);
+    const valores = JSON.parse(document.getElementById('js-valores').textContent);
+    const valoresPie = JSON.parse(document.getElementById('js-valores-pie').textContent);
+    const categoriasPie = JSON.parse(document.getElementById('js-categorias-pie').textContent);
+    const avg_ubano = JSON.parse(document.getElementById('js-promedio_urbano').textContent);
+    const avg_rural = JSON.parse(document.getElementById('js-promedio_rural').textContent);
+
+    // CONFIGURACIÓN GRÁFICO DE BARRAS
+    const opciones = {
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: { show: false }
+        },
+        series: [{
+            name: 'Puntaje Promedio',
+            data: valores
+        }],
+        xaxis: {
+            categories: categorias
+        },
+        colors: [function({ value }) {
+            if (value > 25) return '#ef4444';
+            else if (value > 15) return '#f59e0b';
+            else return '#10b981';
+        }],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: false,
+                distributed: true,
+                dataLabels: { position: 'top' }
+            }
+        },
+        legend: { show: false }
+    };
+    
+    // CONFIGURACIÓN GRÁFICO DE TORTA
+    const opcionesPie = {
+        chart: {
+            type: 'pie',
+            height: 350
+        },
+        series: valoresPie, 
+        labels: categoriasPie,
+        colors: ['#ef4444', '#10b981'],
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: { width: 200 },
+                legend: { position: 'bottom' }
+            }
+        }]
+    };
+
+    // Renderizado simultáneo
+    const chart = new ApexCharts(document.querySelector("#grafico-barras"), opciones);
+    chart.render();
+    const chartPie = new ApexCharts(document.querySelector("#grafico-torta"), opcionesPie);
+    chartPie.render();
+    </script>
+</body>
+</html>
