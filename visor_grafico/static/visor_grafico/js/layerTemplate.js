@@ -1,5 +1,6 @@
 import { map } from "./mapBase.js"; 
 
+// Municipio
 const estiloMunicipio = {
     color: "#059669",      
     weight: 3,             
@@ -8,6 +9,16 @@ const estiloMunicipio = {
     fillOpacity: 0.1      
 };
 
+// veredas
+const estiloVereda = {
+color: "#8a2b0e",      
+weight: 3,             
+opacity: 0.9,
+fillColor:  "#601e0a",  
+fillOpacity: 0.6      
+};
+
+// vias
 function estiloSegunVia(feature) {
     const fclass = feature.properties.fclass;
         switch (fclass) {
@@ -30,20 +41,29 @@ function estiloSegunVia(feature) {
         }
 }
 
-// veredas
-const estiloVereda = {
-color: "#8a2b0e",      
+// zona rural
+const estiloRural = {
+color: "#ff8888",      
 weight: 3,             
 opacity: 0.9,
-fillColor:  "#601e0a",  
-fillOpacity: 0.6      
+fillColor:  "#a05656",  
+fillOpacity: 0.9      
 };
 
+// zona urbana
+const estiloUrbano = {
+color: "#c988ff",      
+weight: 3,             
+opacity: 0.9,
+fillColor:  "#63427e",  
+fillOpacity: 0.9      
+};
+
+// urls de consulta
 urlViasGeoJSON 
 urlFacatativaGeoJSON 
 urlMunicipioGeoJSON
 urlVeredasGeoJSON 
-
 
 export function crearCapaVias(data) {
     const viaApartada = L.geoJSON(data, {
@@ -62,6 +82,7 @@ export function crearCapaVias(data) {
     return viaApartada;
 }
 
+
 export function crearCapaMunicipios(data) {
     const municipioApartado = L.geoJSON(data, {
         style: estiloMunicipio,
@@ -79,6 +100,7 @@ export function crearCapaMunicipios(data) {
     return municipioApartado;
 }
 
+
 export function crearCapaVeredas(data) {
     const veredaApartada =L.geoJSON(data, {
         style: estiloVereda,
@@ -88,9 +110,50 @@ export function crearCapaVeredas(data) {
                 <b>Vereda:</b> ${props.nombre_ver || "Vereda sin nombre"}<br>
                 <b>Departamento:</b> ${props.nom_dep ? `${props.nom_dep} (${props.cod_dpto})` : "Departamento no disponible"}<br>
                 <b>Municipio:</b> ${props.nom_mpio}<br>
-                <b>Area:</b> ${props.area_ha ? `${props.area_ha} h`:"No existe informacion"}<br>
+                <b>Area:</b> ${props.area_ha ? `${props.area_ha} h`:"No existe informacion"}<br> de informalidad:</b> ${props.tasa_informalidad || "No existe informacion"}<br>
             `);
         }
     })
     return  veredaApartada;
+}
+
+
+export function crearCapaZonaRural(data) {
+    const rural = L.geoJSON(data, {
+        style: estiloRural,
+        onEachFeature: function(feature, layer){
+            const props = feature.properties;
+            layer.bindPopup(`
+                <div style="font-family: sans-serif; padding: 0.25rem;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1e293b;">${props.nombre_zona}</h4>
+                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
+                    <p style="margin: 4px 0; color: #b91c1c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
+                    <p style="margin: 4px 0; font-size: 0.85rem;">🏠 Hogares Registrados: ${props.total_hogares}</p>
+                    <p style="margin: 4px 0; font-size: 0.85rem;">👶 Carga Infantil Promedio: ${props.promedio_ninos}</p>
+                    <p style="margin: 4px 0; font-size: 0.85rem;">💼 Tasa Informalidad: ${props.tasa_informalidad}%</p>
+                </div>
+            `);
+        }
+    })
+    return rural
+}
+
+
+export function crearCapaZonaUrbana(data) {
+    const urbano = L.geoJSON(data, {
+        style: estiloUrbano,
+        onEachFeature: function(feature, layer){
+            const props = feature.properties;
+            layer.bindPopup(`
+                <b>Zona geografica:</b> ${props.nombre_zona || "Nombre zona sin nombre"}<br>
+                <b>Tipo_zona:</b> ${props.tipo_zona || "Zona no disponible"}<br>
+                <b>Indice inseguridad:</b> ${props.promedio_indice}<br>
+                <b>Numero total de hogares:</b> ${props.total_hogares || "No existe informacion"}<br>
+                <b>Numero Promedio de niños:</b> ${props.promedio_ninos || "No existe informacion"}<br>
+                <b>Tasa de informalidad:</b> ${props.tasa_informalidad || "No existe informacion"}<br>
+            `)
+        }
+    })
+    return urbano
 }

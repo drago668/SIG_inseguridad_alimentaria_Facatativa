@@ -1,4 +1,4 @@
-import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas } from "./layerTemplate.js";
+import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas, crearCapaZonaRural, crearCapaZonaUrbana } from "./layerTemplate.js";
 import { map, layerControl } from "./mapBase.js";
 
 const slctMunicipio = document.querySelector('#municipios-slct');
@@ -8,10 +8,14 @@ const slctVia = document.querySelector('#vias-slct');
 const checkMunicipio = document.querySelector('#chk-municipio');
 const checkVeredas = document.querySelector('#chk-veredas');
 const checkVias = document.querySelector('#chk-vias');
+const checkUrbano = document.querySelector('#chk-urbano');
+const checkRural = document.querySelector('#chk-rural');
 
 export let capaMunicipios;
 export let capaVeredas;
 export let capaVias;
+export let capaZonaRural;
+export let capaZonaUrbana;
 
 
 // renderizar capa vias
@@ -67,6 +71,7 @@ fetch(urlMunicipioGeoJSON)
     })
     .catch(err => console.error("Error al cargar lo(s) Municipios: ", err));
 
+//filtrar capas con base en los select#################################################################
 
 // filtrar capa municipios con base en los select
 slctMunicipio.addEventListener('change', (e) => {
@@ -131,7 +136,7 @@ slctMunicipio.addEventListener('change', (e) => {
         }).catch(error => console.error('Error cargando veredas:', error));
 });
 
-
+// filtrar con base en los select #####################################################################################
 // filtrar capa veredas con base en los select
 slctVereda.addEventListener('change', (e) => {
     const slcted = e.target.value;
@@ -175,7 +180,7 @@ slctVia.addEventListener('change', (e) => {
 });
 
 
-// activar o desactivar capas
+// activar o desactivar capas#########################################################################
 checkMunicipio.addEventListener('change', (e)=>{
     const ocultarMostrar = e.target.checked;
     console.log('esta marcado: el municipio',ocultarMostrar);
@@ -216,3 +221,61 @@ checkVias.addEventListener('change', (e) =>{
         }
     }
 });
+
+
+checkUrbano.addEventListener('change', (e) =>{
+    const ocultarMostrar =e.target.checked;
+    console.log('esta marcada la urbana: ',ocultarMostrar);
+
+    if(capaZonaUrbana){
+        if(ocultarMostrar){
+            capaZonaUrbana.addTo(map);
+        } else {
+            map.removeLayer(capaZonaUrbana);
+        }
+    }
+});
+
+
+checkRural.addEventListener('change', (e) =>{
+    const ocultarMostrar =e.target.checked;
+    console.log('esta marcada la zona rural: ',ocultarMostrar);
+
+    if(capaZonaRural){
+        if(ocultarMostrar){
+            capaZonaRural.addTo(map);
+        } else {
+            map.removeLayer(capaZonaRural);
+        }
+    }
+});
+
+// cargar capas de zona geografica (zona urbana, zona rural)#####################################################
+fetch(urlZonaUrbana)
+    .then(response =>{
+        if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
+        return response.json();
+    })
+    .then(data => {
+        if(capaZonaUrbana){
+            map.removeLayer(capaZonaUrbana);
+        }
+        capaZonaUrbana = crearCapaZonaUrbana(data);
+        capaZonaUrbana.addTo(map);
+    })
+    .catch(err => console.error("Error al cargar la zona urbana: ", err));
+
+
+fetch(urlZonaRural)
+    .then(response =>{
+        if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(rural)");
+        return response.json();
+    })
+    .then(data => {
+        if(capaZonaRural){
+            map.removeLayer(capaZonaRural);
+        }
+        capaZonaRural = crearCapaZonaRural(data);
+        capaZonaRural.addTo(map);
+    })
+    .catch(err => console.error("Error al cargar la zona rural: ", err));

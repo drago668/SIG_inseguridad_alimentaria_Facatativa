@@ -20,3 +20,4 @@ env/
 
 # Archivos de pruebas
 *.csv
+requirements copy.txt

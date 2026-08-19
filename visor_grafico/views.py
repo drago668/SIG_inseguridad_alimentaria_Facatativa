@@ -4,10 +4,12 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import SpatialReference
+from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.db.models import Avg, Sum, Count, Case, When, Value, IntegerField,FloatField, F
 from .models import Vias
 from .models import Municipios
 from .models import Veredas
+from indicador_territorial.models import Hogar
 
 def mapa_facatativa_page(request):
     listado_municipios = Municipios.objects.order_by('mpio_cnmbr')
@@ -136,12 +138,12 @@ def veredas_facatativa_geojson(request):
 
 def geojson_inseguridad_y_mapa(request):
     """
-    API Unificada: Construye el GeoJSON en EPSG:4326 uniendo las veredas 
-    e infiriendo el casco urbano mediante diferencia espacial, inyectando 
-    los promedios de inseguridad alimentaria del Sisbén IV.
+    API Unificada Eficiente: Utiliza exclusivamente la capa de Veredas.
+    Dibuja la zona rural por polígonos y extrae el anillo interior (hueco) 
+    para aislar y pintar la cabecera urbana de Facatativá de forma exacta.
     """
     try:
-        # 1. Recuperamos y calculamos el índice multidimensional del Sisbén IV
+        # 1. Tu matriz analítica del Sisbén IV (Idéntica)
         hogares = Hogar.objects.select_related('vivienda', 'jefe_hogar')
         hogares_calculados = hogares.annotate(
             w_nevera=Case(When(nevera=0, then=Value(16.66)), default=Value(0), output_field=FloatField()),
@@ -154,10 +156,9 @@ def geojson_inseguridad_y_mapa(request):
             indice_inseguridad=F('w_nevera') + F('w_cocina') + F('w_acueducto') + F('w_alcantarillado') + F('w_agua_7_dias') + F('w_combustible')
         )
 
-        # Agrupamos por el texto de la zona geográfica para separar urbana de rural
         datos_zonas = hogares_calculados.values('zona_geografica__nombre_zona').annotate(
             promedio_indice=Avg('indice_inseguridad'),
-            total_hogares=Count('id'),
+            total_hogares=Sum('zona_geografica__fex'),
             promedio_ninos=Avg('cantidad_ninos'),
             tasa_informalidad=Avg(Case(When(jefe_hogar__trabajo_informal=1, then=Value(100.0)), default=Value(0.0), output_field=FloatField()))
         )
@@ -165,70 +166,83 @@ def geojson_inseguridad_y_mapa(request):
         m_urbano = next((z for z in datos_zonas if z['zona_geografica__nombre_zona'] == 'Cabecera'), None)
         m_rural = next((z for z in datos_zonas if z['zona_geografica__nombre_zona'] == 'Centro poblado, Rural disperso'), None)
 
-        # 2. Configuración de Sistemas de Referencia Espacial (SRID)
-        ref_origen = SpatialReference(9377)   # Origen Único de Colombia de tu BD [4.14]
-        ref_destino = SpatialReference(4326)  # WGS84 para Leaflet [4.14]
+        ref_origen = SpatialReference(9377)   # Origen Único de Colombia
+        ref_destino = SpatialReference(4326)  # WGS84 para Leaflet
 
-        # 3. Procesamiento de Veredas (Zona Rural)
-        veredas_qs = Veredas.objects.filter(dptompio='25269') # Facatativá fijo [4.14]
+        # 2. Procesamos las Veredas y guardamos sus geometrías
+        veredas_qs = Veredas.objects.filter(dptompio='25269')
         features = []
-        geometrias_veredas = []
+        geometrias_totales = []
 
         for vda in veredas_qs:
             if vda.geom:
-                vda.geom.srid = ref_origen.srid  # Forzamos reconocimiento de proyección nativa [4.14]
-                geometrias_veredas.append(vda.geom)
+                vda.geom.srid = ref_origen.srid
+                geometrias_totales.append(vda.geom)
                 
-                # Transformamos la geometría en caliente a WGS84 para pasarla a Javascript
+                # Transformamos la vereda rural individual para Leaflet
                 geom_copia = vda.geom.clone()
                 geom_copia.transform(ref_destino.srid)
-                geometria_dict = json.loads(geom_copia.geojson)
-
+                
                 features.append({
                     "type": "Feature",
                     "id": f"rural_{vda.codigo_ver}",
-                    "geometry": geometria_dict,
+                    "geometry": json.loads(geom_copia.geojson),
                     "properties": {
-                        "nombre_zona": vda.nombre_ver or "Zona Rural",
+                        "nombre_zona": vda.nombre_ver or f"Vereda {vda.id}",
                         "tipo_zona": "Rural",
                         "promedio_indice": round(m_rural['promedio_indice'] or 0, 1) if m_rural else 0.0,
-                        "total_hogares": m_rural['total_hogares'] if m_rural else 0,
+                        "total_hogares": round(m_rural['total_hogares']) if m_rural else 0,
                         "promedio_ninos": round(m_rural['promedio_ninos'] or 0, 1) if m_rural else 0.0,
                         "tasa_informalidad": round(m_rural['tasa_informalidad'] or 0, 1) if m_rural else 0.0
                     }
                 })
 
-        # 4. Procesamiento de Cabecera Urbana por Diferencia Espacial (Municipio - Veredas)
-        municipio_obj = Municipios.objects.filter(mpio_cdpmp='25269').first() # Facatativá [4.14]
-        
-        if municipio_obj and municipio_obj.geom and geometrias_veredas:
-            municipio_obj.geom.srid = ref_origen.srid
+        # ==========================================================================
+        # EXTRACCIÓN AUTOMÁTICA DEL HUECO URBANO (EL ANILLO INTERIOR)
+        # ==========================================================================
+        if geometrias_totales:
+            # 3.1. Creamos la silueta exterior unificada (esta sí se genera bien)
+            silueta_total = geometrias_totales[0]
+            for g in geometrias_totales[1:]:
+                silueta_total = silueta_total.union(g)
             
-            # Unimos todas las veredas en un solo polígono regional sólido en 9377
-            union_rural = geometrias_veredas[0]
-            for g in geometrias_veredas[1:]:
-                union_rural = union_rural.union(g)
+            # 3.2. Para evitar que los bordes compartidos "tapen" el hueco central,
+            # tomamos la silueta exterior completa como nuestro molde base...
+            zona_urbana_geom = silueta_total
             
-            # Restamos el bloque rural al municipio general para aislar el "hueco" del centro urbano
-            geometria_urbana = municipio_obj.geom.difference(union_rural)
-            
-            if geometria_urbana:
-                # Transformamos el polígono resultante a WGS84 para Leaflet
-                geometria_urbana.transform(ref_destino.srid)
+            # ...y le restamos CADA vereda de forma individual.
+            # Al restarlas una a una, el hueco central queda expuesto obligatoriamente,
+            # sin importar los desfases de precisión entre fuentes distintas.
+            for vda_geom in geometrias_totales:
+                if zona_urbana_geom and not zona_urbana_geom.empty:
+                    zona_urbana_geom = zona_urbana_geom.difference(vda_geom)
+
+            # 3.3. Si el resultado contiene múltiples fragmentos debido a imperfecciones en los bordes,
+            # nos quedamos únicamente con el fragmento central, que será por mucho el de mayor área.
+            if zona_urbana_geom and not zona_urbana_geom.empty:
+                if hasattr(zona_urbana_geom, 'geom_type') and zona_urbana_geom.geom_type == 'MultiPolygon':
+                    # Seleccionamos el polígono más grande de la colección (el casco urbano)
+                    zona_urbana_geom = max(zona_urbana_geom, key=lambda x: x.area)
+
+                # Validamos que sea un polígono con un área representativa para la cabecera (ej: mayor a 10 hectáreas)
+                # Como estamos en el SRID 9377 (metros cuadrados), 100.000 m² = 10 hectáreas.
+                if zona_urbana_geom.area > 100000:
+                    # Transformamos a WGS84 para Leaflet
+                    zona_urbana_geom.transform(ref_destino.srid)
                 
-                features.append({
-                    "type": "Feature",
-                    "id": "urbano_cabecera",
-                    "geometry": json.loads(geometria_urbana.geojson),
-                    "properties": {
-                        "nombre_zona": "Cabecera Urbana (Facatativá Centro)",
-                        "tipo_zona": "Urbana",
-                        "promedio_indice": round(m_urbano['promedio_indice'] or 0, 1) if m_urbano else 0.0,
-                        "total_hogares": m_urbano['total_hogares'] if m_urbano else 0,
-                        "promedio_ninos": round(m_urbano['promedio_ninos'] or 0, 1) if m_urbano else 0.0,
-                        "tasa_informalidad": round(m_urbano['tasa_informalidad'] or 0, 1) if m_urbano else 0.0
-                    }
-                })
+                    features.append({
+                        "type": "Feature",
+                        "id": "urbano_cabecera",
+                        "geometry": json.loads(zona_urbana_geom.geojson),
+                        "properties": {
+                            "nombre_zona": "Cabecera Urbana (Facatativá Centro)",
+                            "tipo_zona": "Urbana",
+                            "promedio_indice": round(m_urbano['promedio_indice'] or 0, 1) if m_urbano else 0.0,
+                            "total_hogares": round(m_urbano['total_hogares']) if m_urbano else 0,
+                            "promedio_ninos": round(m_urbano['promedio_ninos'] or 0, 1) if m_urbano else 0.0,
+                            "tasa_informalidad": round(m_urbano['tasa_informalidad'] or 0, 1) if m_urbano else 0.0
+                        }
+                    })
 
         geojson_final = {
             "type": "FeatureCollection",

@@ -76,15 +76,13 @@
             </div>
         </div>
 
-
-
         <!-- SECCIÓN ECONOMÉTRICA: EXPLICACIÓN DE CAUSAS -->
         <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;"> Análisis de Causas Económicas y Demográficas (Regresión OLS)</h2>
         <div class="regression-grid">
             
             <!-- PANEL IZQUIERDO: COEFICIENTES -->
             <div class="chart-container" style="position: relative;">
-                <span class="badge-sig" style="background: #e0f2fe; color: #0369a1;">R² Ajustado: 4.88%</span>
+                <span id="var-r2" class="badge-sig" style="background: #e0f2fe; color: #0369a1;">R² Ajustado: </span>
                 <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Impacto Marginal de las Variables Descriptoras</h3>
                 <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Pesos calculados aislando las variables con p-valor estadísticamente significativo (< 0.05).</p>
                 
@@ -94,7 +92,15 @@
                             <strong style="color: #374151;">Constante Base del Territorio</strong>
                             <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Puntaje inicial de vulnerabilidad del municipio</p>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: bold; color: #4b5563;">+22.54</span>
+                        <span id="var-territorio" style="font-size: 1.25rem; font-weight: bold; color: #4b5563;"></span>
+                    </div>
+
+                    <div class="coef-item danger">
+                        <div>
+                            <strong style="color: #b91c1c;">Ubicacion geografica (Urbano/rural)</strong>
+                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Impacto por Ubicacion</p>
+                        </div>
+                        <span id="var-zona" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
                     </div>
 
                     <div class="coef-item danger">
@@ -102,7 +108,7 @@
                             <strong style="color: #b91c1c;">Efecto Trabajo Informal</strong>
                             <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Acelerador crítico por inestabilidad de ingresos</p>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: bold; color: #ef4444;">+7.71</span>
+                        <span id="var-trab_informal" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
                     </div>
 
                     <div class="coef-item danger">
@@ -110,7 +116,7 @@
                             <strong style="color: #b91c1c;">Presencia de Niños (Menores 18)</strong>
                             <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Impacto acumulativo por cada dependiente puro</p>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: bold; color: #ef4444;">+3.40</span>
+                        <span id="var-ninos" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
                     </div>
 
                     <div class="coef-item success">
@@ -118,7 +124,7 @@
                             <strong style="color: #047857;">Jefatura Femenina</strong>
                             <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Amortiguador por priorización interna de recursos</p>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: bold; color: #10b981;">-3.77</span>
+                        <span id="var-jefe_mujer" style="font-size: 1.25rem; font-weight: bold; color: #10b981;"></span>
                     </div>
 
                     <div class="coef-item success">
@@ -126,21 +132,58 @@
                             <strong style="color: #047857;">Tamaño General del Hogar</strong>
                             <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Mitigación por economía de escala cooperativa</p>
                         </div>
-                        <span style="font-size: 1.25rem; font-weight: bold; color: #10b981;">-2.65</span>
+                        <span id="var-adultos" style="font-size: 1.25rem; font-weight: bold; color: #10b981;"></span>
                     </div>
                 </div>
             </div>
 
             <!-- PANEL DERECHO: INTERPRETACIÓN ACADÉMICA -->
             <div class="chart-container" style="background-color: #f8fafc; border-color: #cbd5e1;">
-                <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">Interpretación Técnica para la Tesis</h3>
+                <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">Interpretación Técnica</h3>
                 <div style="font-size: 0.9rem; color: #334155; line-height: 1.5; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <p><strong>Validación de Hipótesis:</strong> La depuración por criterios de parsimonia estadística confirma que la precariedad del mercado laboral y la estructura familiar son los verdaderos motores del riesgo alimentario local.</p>
-                    <p>El <strong>Trabajo Informal</strong> inyecta de forma masiva <span class="text-red" style="font-weight: bold;">+7.71 puntos</span> de vulnerabilidad al hogar, representando la barrera de ingresos más crítica de la base de datos.</p>
-                    <p>Cada <strong>menor de edad</strong> añade un riesgo neto de <span class="text-red" style="font-weight: bold;">+3.40 puntos</span>, demostrando de forma empírica que la tasa de dependencia demográfica de menores satura el presupuesto calórico del núcleo familiar.</p>
-                    <p>En contraposición, la <strong>Jefatura Femenina (-3.77)</strong> actúa como un escudo protector eficiente, disminuyendo el índice global mediante una orientación de recursos orientada al soporte de la vivienda.</p>
-                    <p>El <strong>R² Ajustado de 4.88%</strong> es consistente con microdatos sociales de pobreza multidimensional. Certifica que la variabilidad restante responde a factores geográficos y de mercado local, justificando plenamente la espacialización mediante el <strong>mapa de Leaflet</strong>.</p>
+                    <p><strong>Validación de Hipótesis:</strong> La depuración por criterios de parsimonia estadística confirma que la precariedad del mercado laboral, la estructura familiar y por encima de todo la zona geografica son los verdaderos motores del riesgo alimentario local.</p>
+                    <p>El <strong>Zona Gepgrafica</strong> inyecta de forma masiva <span id="sp-zona" class="text-red" style="font-weight: bold;"> puntos</span> de vulnerabilidad, representando la barrera de más crítica, pues, condiciona el acceso a servicios como Alcantarillado, Acueducto, entre otros.</p>
+                    <p>El <strong>Trabajo Informal</strong> en segundo lugar añade <span id="sp-trab_informal" class="text-red" style="font-weight: bold;"> puntos</span> de vulnerabilidad al hogar, representando una importante barrera de ingresos crítica .</p>
+                    <p>Cada <strong>menor de edad</strong> añade un riesgo neto de <span id="sp-ninos"class="text-red" style="font-weight: bold;"> puntos</span>, demostrando de forma empírica que la tasa de dependencia demográfica de menores satura el presupuesto calórico del núcleo familiar.</p>
+                    <p>En contraposición, la <strong id="sp-jefe_mujer">Jefatura Femenina ()</strong> actúa como un escudo protector eficiente, disminuyendo el índice global mediante una orientación de recursos orientada al soporte de la vivienda.</p>
+                    <p>El <strong><span id="sp-r2"> R² Ajustado de %</span></strong> es consistente con microdatos sociales de pobreza multidimensional. Certifica que la variabilidad restante responde a factores geográficos y de mercado local, justificando plenamente la espacialización mediante el <strong>mapa de Leaflet</strong>.</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- NUEVA SECCIÓN: VISUALIZACIÓN GRÁFICA DE LA REGRESIÓN MULTIPLE -->
+        <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;">📈 Visualización Interactiva del Modelo OLS</h2>
+        <div class="regression-grid">
+            
+            <!-- COMPONENTE 1: IMPACTO MARGINAL (BARRAS HORIZONTALES) -->
+            <div class="chart-container">
+                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Pesos Relativos de las Variables</h3>
+                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Sentido y magnitud del efecto neto de cada variable sobre el puntaje del índice.</p>
+                <div id="grafico-coeficientes-horizontal"></div>
+            </div>
+
+            <!-- SIMULADOR DINÁMICO DE ESCENARIOS ACTUALIZADO CON GEOGRAFÍA -->
+            <div class="chart-container" style="background-color: #ffffff;">
+                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Simulador Dinámico de Vulnerabilidad Infantil</h3>
+                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Comportamiento del índice a medida que aumentan los niños, aislando el entorno territorial.</p>
+                
+                <!-- Controles interactivos duales -->
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem; background: #f8fafc; padding: 0.75rem; border-radius: 0.375rem; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                    <div style="font-size: 0.85rem; color: #334155;">
+                        <label for="input-personas" style="font-weight: 500;">Miembros en el Hogar:</label>
+                        <input type="number" id="input-personas" value="4" min="1" max="15" style="width: 50px; padding: 2px 4px; border-radius: 4px; border: 1px solid #cbd5e1; margin-left: 4px;">
+                    </div>
+                    <span style="color: #cbd5e1;">|</span>
+                    <div style="font-size: 0.85rem; color: #334155;">
+                        <label for="select-zona-sim" style="font-weight: 500;">📍 Entorno Geográfico:</label>
+                        <select id="select-zona-sim" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #cbd5e1; margin-left: 4px;">
+                            <option value="0">Cabecera Urbana (Centro)</option>
+                            <option value="1" selected>Centro Poblado / Rural Disperso</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="grafico-simulador-lineas"></div>
             </div>
         </div>
 
@@ -178,6 +221,70 @@
             </table>
         </div>
     </div>
+
+        <!-- SECCIÓN: METODOLOGÍA DEL ÍNDICE MULTIDIMENSIONAL TIPO DNP -->
+    <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;">Arquitectura Metodológica del Índice (Sisbén IV)</h2>
+    <div class="chart-container" style="background-color: #ffffff; border-left: 5px solid #2563eb; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">¿Cómo funciona el cálculo de privaciones por hogar?</h3>
+        <p style="font-size: 0.9rem; color: #4b5563; line-height: 1.5; margin-bottom: 1.5rem;">
+            El índice se estructura bajo un esquema de <strong>anidamiento de privaciones físicas</strong>, siguiendo la lógica de los índices de pobreza multidimensional en Colombia. Evalúa 3 dimensiones críticas del hábitat y el soporte nutricional. Si un hogar cumple con todas las condiciones básicas, su puntaje es <strong>0 (Seguridad Absoluta)</strong>; a medida que acumula privaciones, el puntaje escala algebraicamente hasta un máximo de <strong>100 (Inseguridad Crítica)</strong>.
+        </p>
+
+        <!-- Grid de Dimensiones y Pesos Fijos -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            
+            <!-- Dimensión 1 -->
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #1e293b; font-size: 0.95rem;"> 1. Soporte Alimentario</strong>
+                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.33%</span>
+                </div>
+                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Mide la infraestructura mínima para la conservación y preparación inocua de alimentos.</p>
+                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                    <li> <strong>Falta de Nevera (HOG018 = 0):</strong> Inyecta <strong>+16.66 pts</strong></li>
+                    <li> <strong>Falta de Cocina (HOG014 = 0):</strong> Inyecta <strong>+16.66 pts</strong></li>
+                </ul>
+            </div>
+
+            <!-- Dimensión 2 -->
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #1e293b; font-size: 0.95rem;"> 2. Saneamiento y Agua</strong>
+                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.33%</span>
+                </div>
+                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Evalúa el acceso a servicios públicos básicos de salubridad intra-domiciliaria.</p>
+                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                    <li> <strong>Sin Acueducto (Vivienda = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
+                    <li> <strong>Sin Alcantarillado (Vivienda = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
+                    <li> <strong>Frecuencia de Agua < 7 días (HOG008 = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
+                </ul>
+            </div>
+
+            <!-- Dimensión 3 -->
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #1e293b; font-size: 0.95rem;"> 3. Vector de Cocción</strong>
+                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.34%</span>
+                </div>
+                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Determina la calidad energética y contaminación del aire en la preparación de alimentos.</p>
+                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                    <li> <strong>Combustible Inadecuado (HOG017 &ge; 6):</strong> Inyecta <strong>+33.34 pts</strong> <span style="font-size: 0.75rem; color: #6b7280;">(Uso de leña, carbón, desechos o sin cocinar).</span></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Escala de Clasificación Oficial -->
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #334155; font-size: 0.9rem;"> Umbrales de Clasificación de la Escala Territorial:</h4>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem;">
+                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>0.0 a 16.6 pts:</strong> Seguridad Alimentaria / Privación Nula</span>
+                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>16.7 a 33.2 pts:</strong> Vulnerabilidad Moderada</span>
+                <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>33.3 a 100 pts:</strong> Inseguridad Crítica (Línea de Alerta)</span>
+            </div>
+        </div>
+    </div>
+
 
     {{ categorias_grafico|json_script:"js-categorias" }}
     {{ valores_grafico|json_script:"js-valores" }}
@@ -242,12 +349,195 @@
             }
         }]
     };
+    // ==============================================================================
+    // 1. ACTUALIZACIÓN DEL GRÁFICO DE COEFICIENTES (BARRAS HORIZONTALES)
+    // ==============================================================================
+
+
+
+let urlRegresion = "{% url 'regresion'%}";
+
+fetch(urlRegresion)
+    .then(response => {
+        if (!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
+        return response.json();
+    })
+    .then(data => {
+        // 1. Guardamos los datos del JSON
+        const datos = [
+            data.Coeficientes.Efecto_Zona_Rural, 
+            data.Coeficientes.Efecto_Por_Cada_Nino,  
+            data.Coeficientes.Efecto_Trabajo_Informal,
+            data.Coeficientes.Efecto_Jefe_Mujer, 
+            data.Coeficientes.Efecto_Personas_Hogar
+        ];
+
+        // 2. Definimos las opciones de la gráfica AQUÍ ADENTRO con los datos reales
+        const opcionesCoefHoriz = {
+            chart: { type: 'bar', height: 320, toolbar: { show: false } },
+            series: [{
+                name: 'Impacto Neto (Pts)',
+                data: datos // Ahora sí tiene los valores del JSON
+            }],
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    distributed: true,
+                    borderRadius: 4,
+                    dataLabels: { position: 'inside' }
+                }
+            },
+            colors: ['#7c2d12', '#ef4444', '#f59e0b', '#10b981', '#059669'], 
+            xaxis: {
+                categories: [
+                    'Efecto Zona Rural', 
+                    'Por Cada Niño', 
+                    'Trabajo Informal', 
+                    'Jefatura Femenina',
+                    'Por Miembro del Hogar'
+                ],
+                labels: { style: { fontSize: '11px', fontWeight: 500 } }
+            },
+            grid: { borderColor: '#f1f5f9' },
+            legend: { show: false }
+        };
+
+        // 3. Creamos y renderizamos la gráfica en el momento exacto en que llegan los datos
+        const chartCoefHoriz = new ApexCharts(document.querySelector("#grafico-coeficientes-horizontal"), opcionesCoefHoriz);
+        chartCoefHoriz.render();
+    })
+    .catch(err => console.error("Error al cargar los datos de regresion: ", err));
+
+
+
+
+    // ==============================================================================
+    // 2. ACTUALIZACIÓN DEL SIMULADOR DINÁMICO MULTIDIMENSIONAL
+    // ==============================================================================
+    const inputPersonas = document.getElementById('input-personas');
+    const selectZonaSim = document.getElementById('select-zona-sim');
+
+    // Nueva ecuación econométrica definitiva del modelo WLS (R² = 26.58%)
+    // Indice = 15.84 + 22.95*(Rural) + 2.80*(Niños) + 2.14*(Informal) - 3.58*(Personas) - 1.65*(Mujer)
+    function calcularEscenarios(totalPersonas, esRural) {
+        const datosCritico = [];
+        const datosProtegido = [];
+        
+        for (let ninos = 0; ninos <= 5; ninos++) {
+            // Perfil Crítico: Jefe hombre (Mujer=0), Trabajo Informal (Informal=1)
+            let indiceCritico = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 1 - 3.58 * totalPersonas - 1.65 * 0;
+            
+            // Perfil Protegido: Jefatura femenina (Mujer=1), Trabajo Formal (Informal=0)
+            let indiceProtegido = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 0 - 3.58 * totalPersonas - 1.65 * 1;
+            
+            // Acotamos físicamente el índice en el rango real de la escala (0 a 100)
+            datosCritico.push(Math.max(0, Math.min(100, parseFloat(indiceCritico.toFixed(2)))));
+            datosProtegido.push(Math.max(0, Math.min(100, parseFloat(indiceProtegido.toFixed(2)))));
+        }
+        
+        return { datosCritico, datosProtegido };
+    }
+
+    // Carga inicial (Hogar de 4 personas en entorno Rural por defecto)
+    let seriesSimuladas = calcularEscenarios(parseInt(inputPersonas.value), parseInt(selectZonaSim.value));
+
+    const opcionesLineasSimulador = {
+        chart: {
+            type: 'line',
+            height: 280,
+            toolbar: { show: false },
+            animations: { enabled: true, speed: 300 }
+        },
+        stroke: { width: 3, curve: 'straight' },
+        series: [
+            { name: 'Perfil Crítico (Jefe Hombre Informal)', data: seriesSimuladas.datosCritico },
+            { name: 'Perfil Protegido (Jefa Mujer Formal)', data: seriesSimuladas.datosProtegido }
+        ],
+        xaxis: {
+            categories: ['0 Niños', '1 Niño', '2 Niños', '3 Niños', '4 Niños', '5 Niños'],
+            title: { text: 'Estructura Familiar (Dependientes Menores de Edad)' }
+        },
+        yaxis: { min: 0, max: 80, title: { text: 'Puntaje de Inseguridad Predicho (pts)' } },
+        colors: ['#ef4444', '#10b981'],
+        grid: { borderColor: '#f1f5f9' },
+        markers: { size: 5 }
+    };
+
+    const chartLineasSimulador = new ApexCharts(document.querySelector("#grafico-simulador-lineas"), opcionesLineasSimulador);
+    chartLineasSimulador.render();
+
+    // Función unificada para refrescar el gráfico cuando cambie cualquier control
+    function refrescarSimulador() {
+        const personas = parseInt(inputPersonas.value) || 1;
+        const ruralidad = parseInt(selectZonaSim.value);
+        
+        const nuevasSeries = calcularEscenarios(personas, ruralidad);
+        
+        chartLineasSimulador.updateSeries([
+            { name: 'Perfil Crítico (Jefe Hombre Informal)', data: nuevasSeries.datosCritico },
+            { name: 'Perfil Protegido (Jefa Mujer Formal)', data: nuevasSeries.datosProtegido }
+        ]);
+    }
+
+    // Escuchadores de eventos para los dos controles
+    inputPersonas.addEventListener('input', refrescarSimulador);
+    selectZonaSim.addEventListener('change', refrescarSimulador);
+    //chartCoefHoriz.render();
 
     // Renderizado simultáneo
     const chart = new ApexCharts(document.querySelector("#grafico-barras"), opciones);
     chart.render();
     const chartPie = new ApexCharts(document.querySelector("#grafico-torta"), opcionesPie);
     chartPie.render();
+
+
+    urlRegresion ="{% url 'regresion'%}"
+    fetch(urlRegresion)
+        .then(response =>{
+            if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
+            return response.json();
+        })
+        .then(data => {
+            const varTerritorio =document.querySelector("#var-territorio")
+            const varZona =document.querySelector("#var-zona")
+            const varTrab_informal =document.querySelector("#var-trab_informal")
+            const varNinos =document.querySelector("#var-ninos")
+            const varJefe_Mujer =document.querySelector("#var-jefe_mujer")
+            const varAdultos =document.querySelector("#var-adultos")
+            const r2Ajustado =document.querySelector("#var-r2")
+
+            const sp_zona= document.querySelector("#sp-zona").textContent = data.Coeficientes.Efecto_Zona_Rural + " puntos";
+            const sp_trab_informal= document.querySelector("#sp-trab_informal").textContent = data.Coeficientes.Efecto_Trabajo_Informal + " puntos ";
+            const sp_ninos= document.querySelector("#sp-ninos").textContent = data.Coeficientes.Efecto_Por_Cada_Nino + " puntos ";
+            const sp_jefe_mujer = document.querySelector("#sp-jefe_mujer").textContent = "Jefatura Femenina (" + data.Coeficientes.Efecto_Jefe_Mujer + ")  ";
+            const sp_r2= document.querySelector("#sp-r2").textContent = `R² Ajustado de ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
+
+
+
+            console.log(data)
+
+            //R² Ajustado: 4.88%
+            r2Ajustado.textContent = `R² Ajustado: ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
+
+            let signo = data.Coeficientes.Constante_Intercepto > 0 ? "+" : "";
+            varTerritorio.textContent = signo + data.Coeficientes.Constante_Intercepto;
+
+            signo = data.Coeficientes.Efecto_Zona_Rural > 0 ? "+": "" ;
+            varZona.textContent = signo + data.Coeficientes.Efecto_Zona_Rural;
+
+            signo = data.Coeficientes.Efecto_Jefe_Mujer > 0 ? "+" : "";
+            varJefe_Mujer.textContent = signo + data.Coeficientes.Efecto_Jefe_Mujer;
+
+            signo = data.Coeficientes.Efecto_Personas_Hogar > 0 ? "+" : "";
+            varAdultos.textContent = signo + data.Coeficientes.Efecto_Personas_Hogar;
+
+            signo = data.Coeficientes.Efecto_Por_Cada_Nino > 0 ? "+" : "";
+            varNinos.textContent = signo + data.Coeficientes.Efecto_Por_Cada_Nino;
+
+            signo = data.Coeficientes.Efecto_Trabajo_Informal > 0 ? "+" : "";
+            varTrab_informal.textContent = signo + data.Coeficientes.Efecto_Trabajo_Informal;
+    })
+    .catch(err => console.error("Error al cargar los datos de regresion: ", err));
     </script>
 </body>
 </html>

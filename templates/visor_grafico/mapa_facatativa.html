@@ -46,6 +46,14 @@
                     <input type="checkbox" id="chk-vias" checked class="w-4 h-4 accent-emerald-600">
                     <span>Red Vial</span>
                 </label>
+                <label class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    <input type="checkbox" id="chk-rural" checked class="w-4 h-4 accent-emerald-600">
+                    <span>Zona urbana</span>
+                </label>
+                <label class="flex items-center gap-3 text-blue-900 font-medium cursor-pointer">
+                    <input type="checkbox" id="chk-urbano" checked class="w-4 h-4 accent-emerald-600">
+                    <span>Zona rural</span>
+                </label>
             </div>
 
             <div class="flex flex-col gap-3 p-1">
@@ -114,6 +122,8 @@
         const urlMunicipioGeoJSON ="{% url 'facatativa_geojson' %}"
         const urlVeredasGeoJSON ="{% url 'veredas_geojson' %}"
         const urlVeredasMpio ="{% url 'veredas_filter_geojson' %}"
+        const urlZonaRural ="{% url 'inseguridad_mapa' %}"
+        const urlZonaUrbana ="{% url 'inseguridad_mapa'%}"
     </script>
 
     <script 
