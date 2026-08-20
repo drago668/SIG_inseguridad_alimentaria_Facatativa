@@ -6,6 +6,10 @@ from django.db.models import Avg, Sum, Count, Case, When, Value, IntegerField,Fl
 from .models import Hogar
 
 def dashboard_view(request):
+    es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
+        'ADMIN', 'ENTIDAD'
+    ]
+    administrador = request.user.is_authenticated and request.user.rol in ['ADMIN']
     zona_id = request.GET.get('zona')
     hogares = Hogar.objects.select_related('vivienda', 'jefe_hogar', 'zona_geografica')
 
@@ -80,6 +84,8 @@ def dashboard_view(request):
     categorias_javascript = [item['zona_geografica__nombre_zona'] or "Sin Especificar" for item in datos_grafico]
     valores_javascript = [round(item['promedio_zona'] or 0, 1) for item in datos_grafico]
 
+
+
     context = {
         'valores_pie': valores_pie,
         'categorias_pie': categorias_pie,
@@ -91,6 +97,8 @@ def dashboard_view(request):
         'promedio_urbano': round(promedio_urbano, 1),
         'promedio_rural': round(promedio_rural, 1),
         'porcentaje_inseguros': round((total_criticos_expandidos / total_encuestados_fex * 100), 2),
+        'autenticado': es_entidad_o_admin,
+        'es_administrador': administrador,
     }
     
     return render(request, 'indicador_territorial/dashboard.html', context)

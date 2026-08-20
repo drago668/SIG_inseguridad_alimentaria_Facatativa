@@ -12,12 +12,21 @@ from .models import Veredas
 from indicador_territorial.models import Hogar
 
 def mapa_facatativa_page(request):
+    es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
+        'ADMIN', 'ENTIDAD'
+    ]
+    administrador = request.user.is_authenticated and request.user.rol in ['ADMIN']
+
+    es_autenticado =request.user.is_authenticated
     listado_municipios = Municipios.objects.order_by('mpio_cnmbr')
     listado_veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio='25269').values('codigo_ver','nombre_ver')
 
     contexto = {
         'municipios': listado_municipios,
         'veredas': listado_veredas,
+        'administracion': es_entidad_o_admin,
+        'autenticado': es_autenticado,
+        'es_administrador': administrador,
     }
     return render(request, 'visor_grafico/mapa_facatativa.html', contexto)
 
@@ -137,11 +146,11 @@ def veredas_facatativa_geojson(request):
 
 
 def geojson_inseguridad_y_mapa(request):
-    """
-    API Unificada Eficiente: Utiliza exclusivamente la capa de Veredas.
-    Dibuja la zona rural por polígonos y extrae el anillo interior (hueco) 
-    para aislar y pintar la cabecera urbana de Facatativá de forma exacta.
-    """
+
+    # API Unificada Eficiente: Utiliza exclusivamente la capa de Veredas.
+    # Dibuja la zona rural por polígonos y extrae el anillo interior (hueco) 
+    # para aislar y pintar la cabecera urbana de Facatativá de forma exacta.
+
     try:
         # 1. Tu matriz analítica del Sisbén IV (Idéntica)
         hogares = Hogar.objects.select_related('vivienda', 'jefe_hogar')
@@ -253,3 +262,4 @@ def geojson_inseguridad_y_mapa(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+

@@ -7,7 +7,7 @@ class ActividadUltimoMes(models.Model):
     nombre_actividad = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'actividad_ultimo_mes'
 
 
@@ -28,7 +28,7 @@ class AfiliacionSeguridadSocial(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'afiliacion_seguridad_social'
 
 
@@ -46,7 +46,7 @@ class BajoPesoNacer(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'bajo_peso_nacer'
 
 
@@ -56,7 +56,7 @@ class BajoPesoRegimen(models.Model):
     regimen = models.ForeignKey('Regimen', models.DO_NOTHING, db_column='regimen', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'bajo_peso_regimen'
 
 
@@ -65,7 +65,7 @@ class CatNivelEducativo(models.Model):
     nombre_nivel = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'cat_nivel_educativo'
 
 
@@ -74,7 +74,7 @@ class CombustibleParaCocinar(models.Model):
     nombre_combustible = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'combustible_para_cocinar'
 
 
@@ -83,7 +83,7 @@ class Corte(models.Model):
     nombre_corte = models.CharField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'corte'
 
 
@@ -92,7 +92,7 @@ class CursoVida(models.Model):
     nombre_curso = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'curso_vida'
 
 
@@ -110,7 +110,7 @@ class DesnutricionAguda(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'desnutricion_aguda'
 
 
@@ -119,7 +119,7 @@ class Eps(models.Model):
     nombre_eps = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'eps'
 
 
@@ -129,7 +129,7 @@ class EtapaVidaMadre(models.Model):
     curso_vida = models.ForeignKey(CursoVida, models.DO_NOTHING, db_column='curso_vida', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'etapa_vida_madre'
 
 
@@ -138,7 +138,7 @@ class FuenteObtencionAgua(models.Model):
     nombre_fuente = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'fuente_obtencion_agua'
 
 
@@ -163,7 +163,7 @@ class Hogar(models.Model):
     cantidad_adultos_mayores = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'hogar'
 
 
@@ -182,7 +182,7 @@ class JefeHogar(models.Model):
     orden = models.CharField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'jefe_hogar'
 
 
@@ -191,7 +191,7 @@ class MaterialVivienda(models.Model):
     nombre_material = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'material_vivienda'
 
 
@@ -208,7 +208,7 @@ class MortalidadDesnutricion(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'mortalidad_desnutricion'
 
 
@@ -219,7 +219,7 @@ class MortalidadInfantilPorEdad(models.Model):
     mortalidad = models.ForeignKey(MortalidadDesnutricion, models.DO_NOTHING, db_column='mortalidad', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'mortalidad_infantil_por_edad'
 
 
@@ -228,7 +228,7 @@ class Nacionalidad(models.Model):
     pais_origen = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'nacionalidad'
 
 
@@ -237,7 +237,7 @@ class ProgramaSocial(models.Model):
     nombre_programa = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'programa_social'
 
 
@@ -247,7 +247,7 @@ class ProgramaSocialZonaGeografica(models.Model):
     id_programa = models.ForeignKey(ProgramaSocial, models.DO_NOTHING, db_column='id_programa')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'programa_social_zona_geografica'
 
 
@@ -256,7 +256,7 @@ class Regimen(models.Model):
     nombre_regimen = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'regimen'
 
 
@@ -265,7 +265,7 @@ class Sexo(models.Model):
     nombre_sexo = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sexo'
 
 
@@ -274,7 +274,7 @@ class TipoVivienda(models.Model):
     nombre_tipo_vivienda = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tipo_vivienda'
 
 
@@ -283,7 +283,7 @@ class TratamientoAguaConsumo(models.Model):
     nombre_tratamiento = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tratamiento_agua_consumo'
 
 
@@ -296,7 +296,7 @@ class Vivienda(models.Model):
     llave = models.CharField(blank=True, null=True, db_column='llave')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'vivienda'
 
 
@@ -315,5 +315,5 @@ class ZonaGeografica(models.Model):
     
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'zona_geografica'

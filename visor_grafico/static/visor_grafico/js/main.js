@@ -1,5 +1,6 @@
 import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas, crearCapaZonaRural, crearCapaZonaUrbana } from "./layerTemplate.js";
 import { map, layerControl } from "./mapBase.js";
+//import { toggleMedicion } from './mapBase.js';
 
 const slctMunicipio = document.querySelector('#municipios-slct');
 const slctVereda = document.querySelector('#veredas-slct');
@@ -10,6 +11,8 @@ const checkVeredas = document.querySelector('#chk-veredas');
 const checkVias = document.querySelector('#chk-vias');
 const checkUrbano = document.querySelector('#chk-urbano');
 const checkRural = document.querySelector('#chk-rural');
+const btnPdf = document.querySelector('#descargar_pdf')
+const btnPng = document.querySelector('#descargar_png')
 
 export let capaMunicipios;
 export let capaVeredas;
@@ -17,6 +20,39 @@ export let capaVias;
 export let capaZonaRural;
 export let capaZonaUrbana;
 
+// main.js
+import { 
+    activarModoMedicion, 
+    limpiarTodasLasMediciones 
+} from './mapBase.js';
+
+// Elementos DOM
+const btnMenu = document.getElementById('btn-medir-menu');
+const dropdown = document.getElementById('dropdown-medicion');
+const btnCerrar = document.getElementById('btn-cerrar-menu');
+const btnNueva = document.getElementById('btn-nueva-medicion');
+const btnLimpiar = document.getElementById('btn-limpiar-todo');
+
+// Abrir / Cerrar Menú
+btnMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+});
+
+btnCerrar.addEventListener('click', () => {
+    dropdown.classList.add('hidden');
+});
+
+// Acción: Iniciar Nueva Medición
+btnNueva.addEventListener('click', () => {
+    activarModoMedicion();
+    dropdown.classList.add('hidden');
+});
+
+// Acción: Borrar Todo
+btnLimpiar.addEventListener('click', () => {
+    limpiarTodasLasMediciones();
+});
 
 // renderizar capa vias
 fetch(urlViasGeoJSON)
@@ -279,3 +315,106 @@ fetch(urlZonaRural)
         capaZonaRural.addTo(map);
     })
     .catch(err => console.error("Error al cargar la zona rural: ", err));
+
+// Función para mostrar / ocultar el spinner de carga
+function toggleLoading(show) {
+    const overlay = document.getElementById('loading_overlay');
+    if (!overlay) return;
+    
+    if (show) {
+        overlay.classList.remove('hidden');
+    } else {
+        overlay.classList.add('hidden');
+    }
+}
+
+// Exportar a Imagen (PNG / JPG) con leaflet-image
+function exportarMapaImagen(formato = 'png') {
+    toggleLoading(true); // Mostrar estado de carga
+
+    // Pequeña pausa con setTimeout para asegurar que el DOM dibuje el modal de carga antes de bloquear la CPU
+    setTimeout(() => {
+        leafletImage(map, function(err, canvas) {
+            try {
+                if (err) {
+                    console.error('Error al generar la imagen:', err);
+                    alert('Ocurrió un error al procesar el mapa.');
+                    return;
+                }
+
+                const mimeType = formato === 'jpg' ? 'image/jpeg' : 'image/png';
+                const imageURI = canvas.toDataURL(mimeType, 0.95);
+
+                const link = document.createElement('a');
+                link.download = `mapa_exportado.${formato}`;
+                link.href = imageURI;
+                link.click();
+                link.remove();
+            } finally {
+                toggleLoading(false); // Ocultar estado de carga siempre
+            }
+        });
+    }, 100);
+}
+
+// Exportar a PDF con leaflet-image + jsPDF
+function exportarMapaPDF() {
+    toggleLoading(true);
+
+    setTimeout(() => {
+        leafletImage(map, function(err, canvas) {
+            try {
+                if (err) {
+                    console.error('Error al generar el PDF:', err);
+                    alert('Ocurrió un error al procesar el PDF.');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/png');
+                
+                const orientation = canvas.width > canvas.height ? 'l' : 'p';
+                const pdf = new jsPDF(orientation, 'mm', 'a4');
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const ratio = canvas.width / canvas.height;
+                let width = pdfWidth - 20;
+                let height = width / ratio;
+
+                if (height > pdfHeight - 20) {
+                    height = pdfHeight - 20;
+                    width = height * ratio;
+                }
+
+                pdf.addImage(imgData, 'PNG', 10, 10, width, height);
+                pdf.save('mapa_exportado.pdf');
+            } finally {
+                toggleLoading(false);
+            }
+        });
+    }, 100);
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Capturar referencias de los botones
+    const btnPng = document.getElementById('descargar_png');
+    const btnPdf = document.getElementById('descargar_pdf');
+    const btnJpg = document.getElementById('descargar_jpg'); // Opcional si agregas botón JPG
+
+    // Asignar el evento 'click' a cada función
+    if (btnPng) {
+        btnPng.addEventListener('click', () => exportarMapaImagen('png'));
+    }
+
+    if (btnJpg) {
+        btnJpg.addEventListener('click', () => exportarMapaImagen('jpg'));
+    }
+
+    if (btnPdf) {
+        btnPdf.addEventListener('click', () => exportarMapaPDF());
+    }
+});
+

@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - sig-postgres-data:/var/lib/postgresql
+      - sig-postgres-data:/var/lib/postgresql/data
   web:
     build: .  # Busca el Dockerfile en la carpeta actual
     command: python manage.py runserver 0.0.0.0:8000  # Comando para desarrollo local

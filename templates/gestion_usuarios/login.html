@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - SIG Inseguridad Alimentaria</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"> </script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 border border-slate-200">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Sistema de Información Geográfica</h1>
+            <p class="text-sm text-slate-500 mt-1">Inseguridad Alimentaria</p>
+        </div>
+
+        <!-- Mensajes de Alerta -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-3 text-sm rounded-lg border {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Formulario -->
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">{{ form.username.label }}</label>
+                {{ form.username }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">{{ form.password.label }}</label>
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="w-full bg-teal-800/80 hover:bg-teal-800/50  text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
+                Ingresar al Sistema
+            </button>
+        </form>
+
+        <!-- Acceso Ciudadano / Público -->
+        <div class="mt-6 border-t  border-teal-700 pt-4 text-center">
+            <p class="text-xs text-slate-500">¿Eres un ciudadano interesado en consultar información espacial?</p>
+            <a href="{% url 'mapa_facatativa' %}" class="inline-block mt-2 text-sm font-semibold text-teal-800/80 hover:text-emerald-800">
+                Acceder al Visor Público &rarr;
+            </a>
+        </div>
+
+    </div>
+
+</body>
+</html>

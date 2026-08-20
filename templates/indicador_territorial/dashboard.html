@@ -3,287 +3,365 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Territorial - Local</title>
-
-    <style>
-        body { font-family: system-ui, sans-serif; background-color: #f3f4f6; padding: 2rem; margin: 0; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: #1f2937; margin-bottom: 0.5rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        
-        /* Grids Estructurales */
-        .chart-grid, .regression-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        @media (max-width: 768px) { .chart-grid, .regression-grid { grid-template-columns: 1fr; } }
-        
-        /* Componente Tarjeta */
-        .card { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; position: relative; }
-        .card-title { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; font-weight: 500; margin: 0; }
-        .card-value { font-size: 1.875rem; font-weight: bold; margin-top: 0.5rem; margin-bottom: 0; }
-        
-        /* Modificadores Visuales */
-        .text-blue { color: #2563eb; }
-        .text-green { color: #10b981; }
-        .text-red { color: #ef4444; }
-        .badge-sig { position: absolute; top: 1rem; right: 1rem; background: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: bold; }
-        
-        .chart-container { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
-        
-        /* Listado de Coeficientes */
-        .coef-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-        .coef-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border-left: 4px solid #ccd3e0; }
-        .coef-item.danger { border-left-color: #ef4444; }
-        .coef-item.success { border-left-color: #10b981; }
-    </style>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Territorial - SIG Facatativá</title>
+    <!-- CDN de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CDN de ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans antialiased">
 
-    <div class="container">
-        <h1> Dashboard de Inseguridad Alimentaria</h1>
-        <p style="color: #4b5563; margin-bottom: 2rem;">Análisis multidimensional.</p>
-
-        <!-- TARJETAS -->
-        <div class="grid">
-            <div class="card">
-                <p class="card-title">Índice Promedio General</p>
-                <p class="card-value text-blue">{{ promedio_general }} pts</p>
+    <!-- NAVBAR INTEGRADA EN TONO AZUL VERDOSO -->
+    <header id="header" class="hidden md:flex px-6 py-3 h-16 items-center w-full justify-between bg-teal-700 text-white shadow-md z-10">
+        
+        <!-- Título e Identidad del Sistema -->
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-teal-800/60 rounded-lg border border-teal-500/40 text-teal-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
             </div>
-            <div class="card">
-                <p class="card-title">Hogares Evaluados DNP-sisben</p>
-                <p class="card-value" style="color: #1f2937;">{{ total_encuestados }}</p>
-            </div>
-            <div class="card">
-                <p class="card-title">Hogares con inseguridad alimentaria</p>
-                <p class="card-value text-red" >{{ total_inseguros }}</p>
-            </div>
-            <div class="card">
-                <p class="card-title">Porcentaje hogares con inseguridad alimentaria</p>
-                <p class="card-value" style="color: #1f2937;">{{ porcentaje_inseguros }} %</p>
+            <div>
+                <h1 class="text-base font-bold text-white leading-tight">SIG Facatativá</h1>
+                <p class="text-xs text-teal-100/80 font-medium">Sistema de Información Geográfica — Cundinamarca</p>
             </div>
         </div>
 
-        <!-- BLOQUE DE GRAFICOS -->
-        <div class="chart-grid">
-            <div class="chart-container">
-                <h2 style="font-size: 1.25rem; color: #374151; margin-top: 0; margin-bottom: 1rem;">Inseguridad Alimentaria por Zona Geográfica</h2>
-                <div id="grafico-barras"></div>
+        <!-- Navegación y Herramientas -->
+        <nav class="flex items-center gap-1 lg:gap-2 text-xs font-medium text-teal-50">
+            <div class="h-5 w-px bg-teal-500/50 mx-1"></div>
+
+            {% if es_administrador %}
+                <a href="{% url 'registrar_usuario' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 transition-colors">
+                    <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    <span>Registrar usuario</span>
+                </a>
+            {% endif %}
+
+            {% if autenticado %}
+                <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
+                    <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'logout' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-rose-100 hover:text-white hover:bg-rose-600/80 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span>Salir</span>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-teal-900 bg-white hover:bg-teal-50 rounded-lg shadow-sm transition-all active:scale-95">
+                    <svg class="w-4 h-4 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <span>Iniciar sesión</span>
+                </a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL DEL DASHBOARD -->
+    <main class="max-w-7xl mx-auto p-6 space-y-8">
+        
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Dashboard de Inseguridad Alimentaria</h1>
+                <p class="text-xs text-slate-500 mt-1">Análisis multidimensional y econométrico territorial — Facatativá</p>
+            </div>
+            <a href="{% url 'mapa_facatativa' %}" class="inline-flex items-center gap-2 self-start md:self-auto text-sm font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm transition">
+                <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>Volver al mapa</span>
+            </a>
+        </div>
+
+        <!-- TARJETAS DE INDICADORES PRINCIPALES (KPIs) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Índice Promedio General</p>
+                <p class="text-3xl font-bold text-teal-700 mt-2">{{ promedio_general }} <span class="text-sm font-medium text-slate-500">pts</span></p>
             </div>
 
-            <div class="chart-container">
-                <h2 style="font-size: 1.25rem; color: #374151; margin-top: 0; margin-bottom: 1rem;">Distribución de Sexo (Jefe Hogar)</h2>
-                <div id="grafico-torta"></div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Hogares Evaluados DNP-sisbén</p>
+                <p class="text-3xl font-bold text-slate-800 mt-2">{{ total_encuestados }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Hogares con Inseguridad</p>
+                <p class="text-3xl font-bold text-rose-600 mt-2">{{ total_inseguros }}</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Porcentaje Inseguridad</p>
+                <p class="text-3xl font-bold text-slate-800 mt-2">{{ porcentaje_inseguros }} <span class="text-sm font-medium text-slate-500">%</span></p>
+            </div>
+
+        </div>
+
+        <!-- BLOQUE DE GRÁFICOS INICIALES -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
+                    Inseguridad Alimentaria por Zona Geográfica
+                </h2>
+                <div id="grafico-barras" class="min-h-[250px]"></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 pb-2 border-b border-slate-100">
+                    Distribución de Sexo (Jefe Hogar)
+                </h2>
+                <div id="grafico-torta" class="min-h-[250px]"></div>
             </div>
         </div>
 
         <!-- SECCIÓN ECONOMÉTRICA: EXPLICACIÓN DE CAUSAS -->
-        <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;"> Análisis de Causas Económicas y Demográficas (Regresión OLS)</h2>
-        <div class="regression-grid">
-            
-            <!-- PANEL IZQUIERDO: COEFICIENTES -->
-            <div class="chart-container" style="position: relative;">
-                <span id="var-r2" class="badge-sig" style="background: #e0f2fe; color: #0369a1;">R² Ajustado: </span>
-                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Impacto Marginal de las Variables Descriptoras</h3>
-                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Pesos calculados aislando las variables con p-valor estadísticamente significativo (< 0.05).</p>
+        <div class="space-y-4 pt-4">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Análisis de Causas Económicas y Demográficas (Regresión OLS)
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- PANEL IZQUIERDO: COEFICIENTES -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Impacto Marginal de las Variables</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Pesos aislados con p-valor estadísticamente significativo (&lt; 0.05)</p>
+                        </div>
+                        <span id="var-r2" class="bg-teal-50 text-teal-800 border border-teal-200 text-xs px-2.5 py-1 rounded-md font-bold shadow-sm">
+                            R² Ajustado: 
+                        </span>
+                    </div>
+
+                    <div class="space-y-2.5 pt-2">
+                        <!-- Item Constante -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-slate-400 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-slate-700 block">Constante Base del Territorio</strong>
+                                <p class="text-xs text-slate-500">Puntaje inicial de vulnerabilidad del municipio</p>
+                            </div>
+                            <span id="var-territorio" class="text-lg font-bold text-slate-700"></span>
+                        </div>
+
+                        <!-- Item Zona -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-rose-500 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-rose-700 block">Ubicación Geográfica (Urbano/Rural)</strong>
+                                <p class="text-xs text-slate-500">Impacto diferencial por localización</p>
+                            </div>
+                            <span id="var-zona" class="text-lg font-bold text-rose-600"></span>
+                        </div>
+
+                        <!-- Item Trabajo Informal -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-rose-500 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-rose-700 block">Efecto Trabajo Informal</strong>
+                                <p class="text-xs text-slate-500">Acelerador crítico por inestabilidad de ingresos</p>
+                            </div>
+                            <span id="var-trab_informal" class="text-lg font-bold text-rose-600"></span>
+                        </div>
+
+                        <!-- Item Niños -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-rose-500 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-rose-700 block">Presencia de Niños (&lt; 18)</strong>
+                                <p class="text-xs text-slate-500">Impacto acumulativo por dependiente directo</p>
+                            </div>
+                            <span id="var-ninos" class="text-lg font-bold text-rose-600"></span>
+                        </div>
+
+                        <!-- Item Jefatura Femenina -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-emerald-500 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-emerald-800 block">Jefatura Femenina</strong>
+                                <p class="text-xs text-slate-500">Amortiguador por priorización interna de recursos</p>
+                            </div>
+                            <span id="var-jefe_mujer" class="text-lg font-bold text-emerald-600"></span>
+                        </div>
+
+                        <!-- Item Tamaño Hogar -->
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border-l-4 border-emerald-500 border-r border-t border-b border-slate-200/60">
+                            <div>
+                                <strong class="text-xs font-bold text-emerald-800 block">Tamaño General del Hogar</strong>
+                                <p class="text-xs text-slate-500">Mitigación por economía de escala cooperativa</p>
+                            </div>
+                            <span id="var-adultos" class="text-lg font-bold text-emerald-600"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: INTERPRETACIÓN ACADÉMICA -->
+                <div class="bg-slate-100/80 p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="text-sm font-semibold text-slate-800 uppercase tracking-wider pb-2 border-b border-slate-200">
+                        Interpretación Técnica
+                    </h3>
+                    <div class="text-xs text-slate-700 leading-relaxed space-y-3">
+                        <p><strong class="text-slate-900">Validación de Hipótesis:</strong> La depuración por criterios de parsimonia estadística confirma que la precariedad del mercado laboral, la estructura familiar y por encima de todo la zona geográfica son los verdaderos motores del riesgo alimentario local.</p>
+                        <p>La <strong class="text-slate-900">Zona Geográfica</strong> inyecta de forma masiva <span id="sp-zona" class="font-bold text-rose-600">puntos</span> de vulnerabilidad, representando la barrera más crítica, pues condiciona el acceso a servicios como Alcantarillado y Acueducto.</p>
+                        <p>El <strong class="text-slate-900">Trabajo Informal</strong> en segundo lugar añade <span id="sp-trab_informal" class="font-bold text-rose-600">puntos</span> de vulnerabilidad al hogar, representando una importante barrera de ingresos.</p>
+                        <p>Cada <strong class="text-slate-900">menor de edad</strong> añade un riesgo neto de <span id="sp-ninos" class="font-bold text-rose-600">puntos</span>, demostrando empíricamente que la tasa de dependencia satura el presupuesto del núcleo familiar.</p>
+                        <p>En contraposición, la <strong id="sp-jefe_mujer" class="text-emerald-700">Jefatura Femenina ()</strong> actúa como un escudo protector eficiente, disminuyendo el índice global mediante una orientación de recursos hacia el soporte vital.</p>
+                        <p>El <strong class="text-slate-900"><span id="sp-r2">R² Ajustado</span></strong> es consistente con microdatos sociales de pobreza multidimensional. Certifica que la variabilidad restante responde a factores geográficos y de mercado local, justificando plenamente la espacialización mediante el mapa interactivo.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VISUALIZACIÓN GRÁFICA DE LA REGRESIÓN MULTIPLE -->
+        <div class="space-y-4 pt-4">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                Visualización Interactiva del Modelo OLS
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- IMPACTO MARGINAL -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Pesos Relativos de las Variables</h3>
+                    <p class="text-xs text-slate-500 mb-3">Sentido y magnitud del efecto neto sobre el puntaje</p>
+                    <div id="grafico-coeficientes-horizontal" class="min-h-[250px]"></div>
+                </div>
+
+                <!-- SIMULADOR DINÁMICO -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wider">Simulador Dinámico de Vulnerabilidad Infantil</h3>
+                        <p class="text-xs text-slate-500">Comportamiento del índice aislando el entorno territorial</p>
+                    </div>
+
+                    <!-- Controles interactivos -->
+                    <div class="flex flex-wrap items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
+                        <div class="flex items-center gap-2">
+                            <label for="input-personas" class="font-semibold text-slate-600">Miembros en Hogar:</label>
+                            <input type="number" id="input-personas" value="4" min="1" max="15" class="w-14 p-1 rounded border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                        </div>
+                        <span class="text-slate-300">|</span>
+                        <div class="flex items-center gap-2">
+                            <label for="select-zona-sim" class="font-semibold text-slate-600">Entorno Geográfico:</label>
+                            <select id="select-zona-sim" class="p-1 rounded border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none bg-white">
+                                <option value="0">Cabecera Urbana (Centro)</option>
+                                <option value="1" selected>Centro Poblado / Rural Disperso</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="grafico-simulador-lineas" class="min-h-[220px]"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TABLA RESUMEN DE PRIVACIONES -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Resumen de Privaciones por Territorio</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-700">
+                    <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                        <tr>
+                            <th class="p-4">Zona Territorial</th>
+                            <th class="p-4">Índice Vulnerabilidad Promedio</th>
+                            <th class="p-4">Estado de Alerta</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr class="hover:bg-slate-50/60 transition-colors">
+                            <td class="p-4 font-medium text-slate-800">Centro poblado, Rural disperso</td>
+                            <td id="js-avg_rural" class="p-4 font-bold text-rose-600">{{ promedio_rural }}</td>
+                            <td class="p-4">
+                                {% if promedio_rural >= 33.3 %}
+                                    <span class="inline-block bg-rose-100 text-rose-800 px-2.5 py-1 rounded font-semibold border border-rose-200">Inseguridad Crítica</span>
+                                {% elif promedio_rural >= 16.7 %}
+                                    <span class="inline-block bg-amber-100 text-amber-800 px-2.5 py-1 rounded font-semibold border border-amber-200">Riesgo / Vulnerabilidad</span>
+                                {% else %}
+                                    <span class="inline-block bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded font-semibold border border-emerald-200">Seguridad Alimentaria</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/60 transition-colors">
+                            <td class="p-4 font-medium text-slate-800">Cabecera</td>
+                            <td id="js-avg_urbano" class="p-4 font-bold text-emerald-600">{{ promedio_urbano }}</td>
+                            <td class="p-4">
+                                <span class="inline-block bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded font-semibold border border-emerald-200">Seguridad Alimentaria</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: METODOLOGÍA Y ARQUITECTURA -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-teal-600 space-y-6">
+            <div>
+                <h3 class="text-base font-bold text-slate-800">Arquitectura Metodológica del Índice (Sisbén IV)</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    El índice se estructura bajo un esquema de <strong>anidamiento de privaciones físicas</strong>, siguiendo la lógica del Índice de Pobreza Multidimensional en Colombia. Evalúa 3 dimensiones del hábitat y el soporte nutricional. Si un hogar cumple con las condiciones básicas obtiene <strong>0 (Seguridad Absoluta)</strong>; a medida que acumula privaciones, escala hasta <strong>100 (Inseguridad Crítica)</strong>.
+                </p>
+            </div>
+
+            <!-- Grid de Dimensiones -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                <div class="coef-list">
-                    <div class="coef-item">
-                        <div>
-                            <strong style="color: #374151;">Constante Base del Territorio</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Puntaje inicial de vulnerabilidad del municipio</p>
-                        </div>
-                        <span id="var-territorio" style="font-size: 1.25rem; font-weight: bold; color: #4b5563;"></span>
+                <!-- Dimensión 1 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <strong class="text-xs font-bold text-slate-800">1. Soporte Alimentario</strong>
+                        <span class="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">Peso: 33.33%</span>
                     </div>
-
-                    <div class="coef-item danger">
-                        <div>
-                            <strong style="color: #b91c1c;">Ubicacion geografica (Urbano/rural)</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Impacto por Ubicacion</p>
-                        </div>
-                        <span id="var-zona" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
-                    </div>
-
-                    <div class="coef-item danger">
-                        <div>
-                            <strong style="color: #b91c1c;">Efecto Trabajo Informal</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Acelerador crítico por inestabilidad de ingresos</p>
-                        </div>
-                        <span id="var-trab_informal" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
-                    </div>
-
-                    <div class="coef-item danger">
-                        <div>
-                            <strong style="color: #b91c1c;">Presencia de Niños (Menores 18)</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Impacto acumulativo por cada dependiente puro</p>
-                        </div>
-                        <span id="var-ninos" style="font-size: 1.25rem; font-weight: bold; color: #ef4444;"></span>
-                    </div>
-
-                    <div class="coef-item success">
-                        <div>
-                            <strong style="color: #047857;">Jefatura Femenina</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Amortiguador por priorización interna de recursos</p>
-                        </div>
-                        <span id="var-jefe_mujer" style="font-size: 1.25rem; font-weight: bold; color: #10b981;"></span>
-                    </div>
-
-                    <div class="coef-item success">
-                        <div>
-                            <strong style="color: #047857;">Tamaño General del Hogar</strong>
-                            <p style="margin: 0; font-size: 0.75rem; color: #6b7280;">Mitigación por economía de escala cooperativa</p>
-                        </div>
-                        <span id="var-adultos" style="font-size: 1.25rem; font-weight: bold; color: #10b981;"></span>
-                    </div>
+                    <p class="text-[11px] text-slate-500">Infraestructura mínima para la conservación y preparación inocua de alimentos.</p>
+                    <ul class="text-xs text-slate-700 space-y-1 list-disc pl-4">
+                        <li><strong>Falta de Nevera:</strong> +16.66 pts</li>
+                        <li><strong>Falta de Cocina:</strong> +16.66 pts</li>
+                    </ul>
                 </div>
+
+                <!-- Dimensión 2 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <strong class="text-xs font-bold text-slate-800">2. Saneamiento y Agua</strong>
+                        <span class="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">Peso: 33.33%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Acceso a servicios públicos básicos de salubridad intra-domiciliaria.</p>
+                    <ul class="text-xs text-slate-700 space-y-1 list-disc pl-4">
+                        <li><strong>Sin Acueducto:</strong> +11.11 pts</li>
+                        <li><strong>Sin Alcantarillado:</strong> +11.11 pts</li>
+                        <li><strong>Agua &lt; 7 días:</strong> +11.11 pts</li>
+                    </ul>
+                </div>
+
+                <!-- Dimensión 3 -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <strong class="text-xs font-bold text-slate-800">3. Vector de Cocción</strong>
+                        <span class="bg-teal-100 text-teal-800 text-[10px] px-2 py-0.5 rounded-full font-bold">Peso: 33.34%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Calidad energética y contaminación en la preparación de alimentos.</p>
+                    <ul class="text-xs text-slate-700 space-y-1 list-disc pl-4">
+                        <li><strong>Combustible Inadecuado:</strong> +33.34 pts <span class="text-[10px] text-slate-400 block">(Leña, carbón o desechos)</span></li>
+                    </ul>
+                </div>
+
             </div>
 
-            <!-- PANEL DERECHO: INTERPRETACIÓN ACADÉMICA -->
-            <div class="chart-container" style="background-color: #f8fafc; border-color: #cbd5e1;">
-                <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">Interpretación Técnica</h3>
-                <div style="font-size: 0.9rem; color: #334155; line-height: 1.5; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <p><strong>Validación de Hipótesis:</strong> La depuración por criterios de parsimonia estadística confirma que la precariedad del mercado laboral, la estructura familiar y por encima de todo la zona geografica son los verdaderos motores del riesgo alimentario local.</p>
-                    <p>El <strong>Zona Gepgrafica</strong> inyecta de forma masiva <span id="sp-zona" class="text-red" style="font-weight: bold;"> puntos</span> de vulnerabilidad, representando la barrera de más crítica, pues, condiciona el acceso a servicios como Alcantarillado, Acueducto, entre otros.</p>
-                    <p>El <strong>Trabajo Informal</strong> en segundo lugar añade <span id="sp-trab_informal" class="text-red" style="font-weight: bold;"> puntos</span> de vulnerabilidad al hogar, representando una importante barrera de ingresos crítica .</p>
-                    <p>Cada <strong>menor de edad</strong> añade un riesgo neto de <span id="sp-ninos"class="text-red" style="font-weight: bold;"> puntos</span>, demostrando de forma empírica que la tasa de dependencia demográfica de menores satura el presupuesto calórico del núcleo familiar.</p>
-                    <p>En contraposición, la <strong id="sp-jefe_mujer">Jefatura Femenina ()</strong> actúa como un escudo protector eficiente, disminuyendo el índice global mediante una orientación de recursos orientada al soporte de la vivienda.</p>
-                    <p>El <strong><span id="sp-r2"> R² Ajustado de %</span></strong> es consistente con microdatos sociales de pobreza multidimensional. Certifica que la variabilidad restante responde a factores geográficos y de mercado local, justificando plenamente la espacialización mediante el <strong>mapa de Leaflet</strong>.</p>
+            <!-- Escala de Clasificación -->
+            <div class="pt-4 border-t border-slate-200/80">
+                <h4 class="text-xs font-semibold text-slate-700 mb-2">Umbrales de Clasificación de la Escala Territorial:</h4>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded font-medium border border-emerald-200"><strong>0.0 a 16.6 pts:</strong> Seguridad Alimentaria</span>
+                    <span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded font-medium border border-amber-200"><strong>16.7 a 33.2 pts:</strong> Vulnerabilidad Moderada</span>
+                    <span class="bg-rose-100 text-rose-800 px-2.5 py-1 rounded font-medium border border-rose-200"><strong>33.3 a 100 pts:</strong> Inseguridad Crítica</span>
                 </div>
             </div>
         </div>
 
-        <!-- NUEVA SECCIÓN: VISUALIZACIÓN GRÁFICA DE LA REGRESIÓN MULTIPLE -->
-        <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;">📈 Visualización Interactiva del Modelo OLS</h2>
-        <div class="regression-grid">
-            
-            <!-- COMPONENTE 1: IMPACTO MARGINAL (BARRAS HORIZONTALES) -->
-            <div class="chart-container">
-                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Pesos Relativos de las Variables</h3>
-                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Sentido y magnitud del efecto neto de cada variable sobre el puntaje del índice.</p>
-                <div id="grafico-coeficientes-horizontal"></div>
-            </div>
+    </main>
 
-            <!-- SIMULADOR DINÁMICO DE ESCENARIOS ACTUALIZADO CON GEOGRAFÍA -->
-            <div class="chart-container" style="background-color: #ffffff;">
-                <h3 style="font-size: 1.1rem; color: #374151; margin-top: 0; margin-bottom: 0.5rem;">Simulador Dinámico de Vulnerabilidad Infantil</h3>
-                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem;">Comportamiento del índice a medida que aumentan los niños, aislando el entorno territorial.</p>
-                
-                <!-- Controles interactivos duales -->
-                <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem; background: #f8fafc; padding: 0.75rem; border-radius: 0.375rem; border: 1px solid #e2e8f0; flex-wrap: wrap;">
-                    <div style="font-size: 0.85rem; color: #334155;">
-                        <label for="input-personas" style="font-weight: 500;">Miembros en el Hogar:</label>
-                        <input type="number" id="input-personas" value="4" min="1" max="15" style="width: 50px; padding: 2px 4px; border-radius: 4px; border: 1px solid #cbd5e1; margin-left: 4px;">
-                    </div>
-                    <span style="color: #cbd5e1;">|</span>
-                    <div style="font-size: 0.85rem; color: #334155;">
-                        <label for="select-zona-sim" style="font-weight: 500;">📍 Entorno Geográfico:</label>
-                        <select id="select-zona-sim" style="padding: 2px 4px; border-radius: 4px; border: 1px solid #cbd5e1; margin-left: 4px;">
-                            <option value="0">Cabecera Urbana (Centro)</option>
-                            <option value="1" selected>Centro Poblado / Rural Disperso</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="grafico-simulador-lineas"></div>
-            </div>
-        </div>
 
-        <div style="margin-top: 2rem;">
-            <h3 style="font-size: 1.1rem; color: #374151; margin-bottom: 1rem;">Resumen de Privaciones por Territorio</h3>
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
-                <thead>
-                    <tr style="background-color: #f9fafb; text-align: left; border-bottom: 1px solid #e5e7eb;">
-                        <th style="padding: 1rem; color: #4b5563;">Zona Territorial</th>
-                        <th style="padding: 1rem; color: #4b5563;">Índice Vulnerabilidad Promedio</th>
-                        <th style="padding: 1rem; color: #4b5563;">Estado de Alerta</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom: 1px solid #e5e7eb;">
-                        <td style="padding: 1rem; font-weight: 500;">Centro poblado, Rural disperso</td>
-                        <td id="js-avg_rural" style="padding: 1rem; color: #ef4444; font-weight: bold;">{{promedio_rural}}</td>
-                        <td style="padding: 1rem;">
-                            {% if promedio_rural >= 33.3 %}
-                                <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Inseguridad Crítica</span>
-                            {% elif promedio_rural >= 16.7 %}
-                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Riesgo / Vulnerabilidad</span>
-                            {% else %}
-                                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Seguridad Alimentaria</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 1rem; font-weight: 500;">Cabecera</td>
-                        <td id="js-avg_urbano" style="padding: 1rem; color: #10b981; font-weight: bold;">{{promedio_urbano}}</td>
-                        
-                        <td style="padding: 1rem;"><span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.85rem;">Seguridad Alimentaria</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-        <!-- SECCIÓN: METODOLOGÍA DEL ÍNDICE MULTIDIMENSIONAL TIPO DNP -->
-    <h2 style="font-size: 1.4rem; color: #1f2937; margin-top: 2.5rem; margin-bottom: 1rem;">Arquitectura Metodológica del Índice (Sisbén IV)</h2>
-    <div class="chart-container" style="background-color: #ffffff; border-left: 5px solid #2563eb; margin-bottom: 2rem;">
-        <h3 style="font-size: 1.1rem; color: #1e293b; margin-top: 0; margin-bottom: 0.75rem;">¿Cómo funciona el cálculo de privaciones por hogar?</h3>
-        <p style="font-size: 0.9rem; color: #4b5563; line-height: 1.5; margin-bottom: 1.5rem;">
-            El índice se estructura bajo un esquema de <strong>anidamiento de privaciones físicas</strong>, siguiendo la lógica de los índices de pobreza multidimensional en Colombia. Evalúa 3 dimensiones críticas del hábitat y el soporte nutricional. Si un hogar cumple con todas las condiciones básicas, su puntaje es <strong>0 (Seguridad Absoluta)</strong>; a medida que acumula privaciones, el puntaje escala algebraicamente hasta un máximo de <strong>100 (Inseguridad Crítica)</strong>.
-        </p>
-
-        <!-- Grid de Dimensiones y Pesos Fijos -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-            
-            <!-- Dimensión 1 -->
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #1e293b; font-size: 0.95rem;"> 1. Soporte Alimentario</strong>
-                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.33%</span>
-                </div>
-                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Mide la infraestructura mínima para la conservación y preparación inocua de alimentos.</p>
-                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
-                    <li> <strong>Falta de Nevera (HOG018 = 0):</strong> Inyecta <strong>+16.66 pts</strong></li>
-                    <li> <strong>Falta de Cocina (HOG014 = 0):</strong> Inyecta <strong>+16.66 pts</strong></li>
-                </ul>
-            </div>
-
-            <!-- Dimensión 2 -->
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #1e293b; font-size: 0.95rem;"> 2. Saneamiento y Agua</strong>
-                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.33%</span>
-                </div>
-                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Evalúa el acceso a servicios públicos básicos de salubridad intra-domiciliaria.</p>
-                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
-                    <li> <strong>Sin Acueducto (Vivienda = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
-                    <li> <strong>Sin Alcantarillado (Vivienda = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
-                    <li> <strong>Frecuencia de Agua < 7 días (HOG008 = 0):</strong> Inyecta <strong>+11.11 pts</strong></li>
-                </ul>
-            </div>
-
-            <!-- Dimensión 3 -->
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #1e293b; font-size: 0.95rem;"> 3. Vector de Cocción</strong>
-                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: bold;">Peso: 33.34%</span>
-                </div>
-                <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 0.5rem 0;">Determina la calidad energética y contaminación del aire en la preparación de alimentos.</p>
-                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: #334155; line-height: 1.4;">
-                    <li> <strong>Combustible Inadecuado (HOG017 &ge; 6):</strong> Inyecta <strong>+33.34 pts</strong> <span style="font-size: 0.75rem; color: #6b7280;">(Uso de leña, carbón, desechos o sin cocinar).</span></li>
-                </ul>
-            </div>
-
-        </div>
-
-        <!-- Escala de Clasificación Oficial -->
-        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
-            <h4 style="margin: 0 0 0.5rem 0; color: #334155; font-size: 0.9rem;"> Umbrales de Clasificación de la Escala Territorial:</h4>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem;">
-                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>0.0 a 16.6 pts:</strong> Seguridad Alimentaria / Privación Nula</span>
-                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>16.7 a 33.2 pts:</strong> Vulnerabilidad Moderada</span>
-                <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 0.25rem;"><strong>33.3 a 100 pts:</strong> Inseguridad Crítica (Línea de Alerta)</span>
-            </div>
-        </div>
-    </div>
 
 
     {{ categorias_grafico|json_script:"js-categorias" }}

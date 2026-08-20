@@ -14,7 +14,7 @@ window.addEventListener('resize', (e) =>{
 
     if (esPantallaGrande) {
         console.log("El usuario está en una PC o tablet grande");
-        arrowIcon.classList.remove('hidden');
+        //arrowIcon.classList.remove('hidden');
         // Aquí pones el código para acomodar tu barra lateral en PC
     } else {
         console.log("El usuario está en un celular");
@@ -76,5 +76,7 @@ checkVias.addEventListener('change', (e) =>{
         }
     }
 });
+
+
 
 
