@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'visor_grafico.apps.VisorGraficoConfig',
     'django.contrib.gis',
     'indicador_territorial.apps.IndicadorTerritorialConfig',
-    'gestion_usuarios.apps.GestionUsuariosConfig'
+    'gestion_usuarios.apps.GestionUsuariosConfig',
+    'app_capas'
 ]
 
 MIDDLEWARE = [

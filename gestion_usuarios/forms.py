@@ -29,7 +29,7 @@ class RegistroUsuarioForm(forms.ModelForm):
 
     class Meta:
         model = Usuario
-        fields = ['email', 'first_name', 'last_name', 'rol', 'password']
+        fields = ['email', 'first_name', 'last_name', 'telefono', 'direccion', 'rol', 'password']
         widgets = {
             'email': forms.EmailInput(attrs={
                 'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none border-gray-300',
@@ -42,6 +42,14 @@ class RegistroUsuarioForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none border-gray-300',
                 'placeholder': 'Apellidos'
+            }),
+            'telefono': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none border-gray-300',
+                'placeholder': '+573001234567'
+            }),
+            'direccion': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none border-gray-300',
+                'placeholder': 'Dirección de residencia o entidad'
             }),
             'rol': forms.Select(attrs={
                 'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none border-gray-300 bg-white'

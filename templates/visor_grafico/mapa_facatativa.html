@@ -51,29 +51,76 @@
 
         <!-- Navegación y Herramientas -->
         <nav class="relative z-[1000] flex items-center gap-1 lg:gap-2 text-xs font-medium text-teal-50">
-            <!-- Filtros -->
-            <a href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
+            <!--
+            
+            <a href="#" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                 <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                 <span>Filtros</span>
             </a>
+            
 
-            <!-- Consultas Espaciales -->
             <a href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                 <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 <span>Consultas</span>
             </a>
 
-            <!-- Leyenda -->
+
             <a href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                 <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                 <span>Leyenda</span>
             </a>
 
-            <!-- Capas Activas -->
+
             <a href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                 <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <span>Capas</span>
             </a>
+            -->
+
+            
+            <button id="btn-abrir-modal" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
+                + Nueva Capa
+            </button>
+
+            <!-- Modal Cargar Capa Espacial -->
+            <div id="modal-cargar-capa" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-700">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="text-base font-bold text-teal-800">Cargar Nueva Capa Espacial</h3>
+                        <button id="btn-cerrar-modal" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+                    </div>
+
+                    <form action="{% url 'cargar_capa' %}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Nombre de la Capa</label>
+                            {{ form.nombre }}
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Formato</label>
+                                {{ form.formato }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Archivo (.zip, .gpkg, .geojson, etc.)</label>
+                                {{ form.archivo }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Descripción</label>
+                            {{ form.descripcion }}
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                            <button type="button" id="btn-cancelar-modal" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm">Procesar e Ingestar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
 
             <div class="relative inline-block text-left">
                 <!-- Botón Principal de la Navbar -->
@@ -121,11 +168,12 @@
                 </a>
             {% endif %}
 
-            {% if autenticado %}
+
                 <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                     <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     <span>Dashboard</span>
                 </a>
+                {% if autenticado %}
                 <a href="{% url 'logout' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-rose-100 hover:text-white hover:bg-rose-600/80 rounded-lg transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span>Salir</span>
@@ -254,6 +302,25 @@
                     </button>
                 </div>
             </div>
+            <!-- Sección Integrada de Capas Subidas -->
+            <div id="panel-capas" class="mb-6 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
+                <div class="flex items-center justify-between border-b border-slate-200/60 pb-2.5 mb-3">
+                    <h3 class="font-bold text-slate-800 text-xs tracking-wider uppercase flex items-center gap-2">
+                        <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Capas Disponibles
+                    </h3>
+                    <button id="btn-abrir-modal" type="button" class="bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1" title="Cargar nueva capa">
+                        <span>+</span> Añadir
+                    </button>
+                </div>
+
+                <!-- Lista dinámicamente poblada mediante JS -->
+                <div id="lista-capas-container" class="overflow-y-auto max-h-48 space-y-2 pr-1 text-xs">
+                    <p class="text-slate-400 text-center py-3">Cargando capas...</p>
+                </div>
+            </div>
 
         </aside>
 
@@ -282,6 +349,7 @@
 
     <!--<script src="{% static 'visor_grafico/js/map.js'%}"></script>-->
     <script type="module" src="{% static 'visor_grafico/js/main.js' %}"></script>
+    <script type="module" src="{% static 'visor_grafico/js/capas_mapa.js' %}"></script>
 
 
     <!-- Modal/Overlay de Carga -->

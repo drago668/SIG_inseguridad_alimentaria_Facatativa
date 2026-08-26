@@ -34,16 +34,26 @@ def logout_view(request):
 @rol_requerido(roles_permitidos=[Usuario.Rol.ADMINISTRADOR])
 def registrar_usuario_view(request):
     """Exclusivo para Administradores: permite crear cuentas para otros Admins o Entidades."""
-    
+    mostrar_modal_exito = False
+    usuario_creado_email = ""
+
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():  
             usuario_creado = form.save()
-            messages.success(request, f'Usuario {usuario_creado.email} registrado exitosamente.')
-            return redirect('mapa_facatativa')
+            mostrar_modal_exito = True
+            usuario_creado_email = usuario_creado.email
+            # Reiniciamos el formulario limpio tras el éxito
+            form = RegistroUsuarioForm()
         else:
-            messages.error(request, 'Por favor corrige los errores en el formulario.')
+            messages.error(request, 'Por favor corrige los errores del formulario.')
     else:
         form = RegistroUsuarioForm()
     
-    return render(request, 'gestion_usuarios/registrar_usuario.html', {'form': form})
+    context = {
+        'form': form,
+        'mostrar_modal_exito': mostrar_modal_exito,
+        'usuario_creado_email': usuario_creado_email,
+    }
+    
+    return render(request, 'gestion_usuarios/registrar_usuario.html', context)

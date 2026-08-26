@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from gestion_usuarios.views import login_view, logout_view
+from app_capas.views import cargar_capa
 
 urlpatterns = [
     path("visor_grafico/", include("visor_grafico.urls")),
@@ -25,4 +26,5 @@ urlpatterns = [
     path('auth/', include('gestion_usuarios.urls')),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('capas/', include('app_capas.urls')),
 ]

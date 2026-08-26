@@ -9,7 +9,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- CDN de ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!--Html2PDF-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!--<link rel="stylesheet" href="{% static 'indicador_territorial/css/dashboard.css'%}">-->
 </head>
+
 <body class="bg-slate-50 text-slate-800 min-h-screen font-sans antialiased">
 
     <!-- NAVBAR INTEGRADA EN TONO AZUL VERDOSO -->
@@ -57,9 +61,26 @@
         </nav>
     </header>
 
+    <!-- BARRA DE HERRAMIENTAS Y BOTONES DE ACCIÓN (POR FUERA DEL MAIN) -->
+    <div class="max-w-7xl mx-auto px-6 pt-6 flex justify-end items-center gap-2">
+        <!-- Botón CSV -->
+        <button onclick="exportarCSV()" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-lg shadow-sm transition active:scale-95">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>Exportar CSV</span>
+        </button>
+
+        <!-- Botón PDF -->
+        <button onclick="exportarPDF()" class="inline-flex items-center gap-2 text-xs font-semibold text-white bg-teal-700 hover:bg-teal-800 px-3 py-2 rounded-lg shadow-sm transition active:scale-95">
+            <svg class="w-4 h-4 text-teal-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            <span>Descargar PDF</span>
+        </button>
+    </div>
     <!-- CONTENEDOR PRINCIPAL DEL DASHBOARD -->
-    <main class="max-w-7xl mx-auto p-6 space-y-8">
-        
+    <main id="dashboard-content" class="max-w-7xl mx-auto p-6 space-y-8">
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
             <div>
@@ -371,77 +392,135 @@
     {{promedio_rural|json_script:"js-promedio_rural" }}
     {{promedio_general|json_script:"js-promedio_urbano"}}
 
-    <!-- JAVASCRIPT DE APEXCHARTS -->
-    <script>
-    const categorias = JSON.parse(document.getElementById('js-categorias').textContent);
-    const valores = JSON.parse(document.getElementById('js-valores').textContent);
-    const valoresPie = JSON.parse(document.getElementById('js-valores-pie').textContent);
-    const categoriasPie = JSON.parse(document.getElementById('js-categorias-pie').textContent);
-    const avg_ubano = JSON.parse(document.getElementById('js-promedio_urbano').textContent);
-    const avg_rural = JSON.parse(document.getElementById('js-promedio_rural').textContent);
+<!-- JAVASCRIPT DE APEXCHARTS --><!-- JAVASCRIPT DE APEXCHARTS Y EXPORTACIONES -->
+<script>
+// 1. Declaración global de las instancias
+let chartBarras, chartPie, chartCoefHoriz, chartSimulador;
 
-    // CONFIGURACIÓN GRÁFICO DE BARRAS
-    const opciones = {
-        chart: {
-            type: 'bar',
-            height: 350,
-            toolbar: { show: false }
-        },
-        series: [{
-            name: 'Puntaje Promedio',
-            data: valores
-        }],
-        xaxis: {
-            categories: categorias
-        },
-        colors: [function({ value }) {
-            if (value > 25) return '#ef4444';
-            else if (value > 15) return '#f59e0b';
-            else return '#10b981';
-        }],
-        plotOptions: {
-            bar: {
-                borderRadius: 4,
-                horizontal: false,
-                distributed: true,
-                dataLabels: { position: 'top' }
-            }
-        },
-        legend: { show: false }
-    };
-    
-    // CONFIGURACIÓN GRÁFICO DE TORTA
-    const opcionesPie = {
-        chart: {
-            type: 'pie',
-            height: 350
-        },
-        series: valoresPie, 
-        labels: categoriasPie,
-        colors: ['#ef4444', '#10b981'],
-        responsive: [{
-            breakpoint: 480,
-            options: {
-                chart: { width: 200 },
-                legend: { position: 'bottom' }
-            }
-        }]
-    };
-    // ==============================================================================
-    // 1. ACTUALIZACIÓN DEL GRÁFICO DE COEFICIENTES (BARRAS HORIZONTALES)
-    // ==============================================================================
+// 2. Extraer variables desde Django
+const categorias = JSON.parse(document.getElementById('js-categorias').textContent);
+const valores = JSON.parse(document.getElementById('js-valores').textContent);
+const valoresPie = JSON.parse(document.getElementById('js-valores-pie').textContent);
+const categoriasPie = JSON.parse(document.getElementById('js-categorias-pie').textContent);
+const avg_ubano = JSON.parse(document.getElementById('js-promedio_urbano').textContent);
+const avg_rural = JSON.parse(document.getElementById('js-promedio_rural').textContent);
 
+// ==============================================================================
+// INICIALIZACIÓN DE GRÁFICOS PRINCIPALES
+// ==============================================================================
 
+// Gráfico de Barras
+const opcionesBarras = {
+    chart: { type: 'bar', height: 350, toolbar: { show: false } },
+    series: [{ name: 'Puntaje Promedio', data: valores }],
+    xaxis: { categories: categorias },
+    colors: [function({ value }) {
+        if (value > 25) return '#ef4444';
+        else if (value > 15) return '#f59e0b';
+        else return '#10b981';
+    }],
+    plotOptions: {
+        bar: { borderRadius: 4, horizontal: false, distributed: true, dataLabels: { position: 'top' } }
+    },
+    legend: { show: false }
+};
+chartBarras = new ApexCharts(document.querySelector("#grafico-barras"), opcionesBarras);
+chartBarras.render();
 
+// Gráfico de Torta
+const opcionesPie = {
+    chart: { type: 'pie', height: 350 },
+    series: valoresPie, 
+    labels: categoriasPie,
+    colors: ['#ef4444', '#10b981'],
+    responsive: [{
+        breakpoint: 480,
+        options: { chart: { width: 200 }, legend: { position: 'bottom' } }
+    }]
+};
+chartPie = new ApexCharts(document.querySelector("#grafico-torta"), opcionesPie);
+chartPie.render();
+
+// ==============================================================================
+// SIMULADOR DINÁMICO MULTIDIMENSIONAL
+// ==============================================================================
+const inputPersonas = document.getElementById('input-personas');
+const selectZonaSim = document.getElementById('select-zona-sim');
+
+function calcularEscenarios(totalPersonas, esRural) {
+    const datosCritico = [];
+    const datosProtegido = [];
+    for (let ninos = 0; ninos <= 5; ninos++) {
+        let indiceCritico = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 1 - 3.58 * totalPersonas - 1.65 * 0;
+        let indiceProtegido = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 0 - 3.58 * totalPersonas - 1.65 * 1;
+        datosCritico.push(Math.max(0, Math.min(100, parseFloat(indiceCritico.toFixed(2)))));
+        datosProtegido.push(Math.max(0, Math.min(100, parseFloat(indiceProtegido.toFixed(2)))));
+    }
+    return { datosCritico, datosProtegido };
+}
+
+let seriesSimuladas = calcularEscenarios(parseInt(inputPersonas.value), parseInt(selectZonaSim.value));
+
+const opcionesLineasSimulador = {
+    chart: { type: 'line', height: 280, toolbar: { show: false }, animations: { enabled: true, speed: 300 } },
+    stroke: { width: 3, curve: 'straight' },
+    series: [
+        { name: 'Perfil Crítico (Jefe Hombre Informal)', data: seriesSimuladas.datosCritico },
+        { name: 'Perfil Protegido (Jefa Mujer Formal)', data: seriesSimuladas.datosProtegido }
+    ],
+    xaxis: {
+        categories: ['0 Niños', '1 Niño', '2 Niños', '3 Niños', '4 Niños', '5 Niños'],
+        title: { text: 'Estructura Familiar (Dependientes Menores de Edad)' }
+    },
+    yaxis: { min: 0, max: 80, title: { text: 'Puntaje de Inseguridad Predicho (pts)' } },
+    colors: ['#ef4444', '#10b981'],
+    grid: { borderColor: '#f1f5f9' },
+    markers: { size: 5 }
+};
+
+chartSimulador = new ApexCharts(document.querySelector("#grafico-simulador-lineas"), opcionesLineasSimulador);
+chartSimulador.render();
+
+function refrescarSimulador() {
+    const personas = parseInt(inputPersonas.value) || 1;
+    const ruralidad = parseInt(selectZonaSim.value);
+    const nuevasSeries = calcularEscenarios(personas, ruralidad);
+    chartSimulador.updateSeries([
+        { name: 'Perfil Crítico (Jefe Hombre Informal)', data: nuevasSeries.datosCritico },
+        { name: 'Perfil Protegido (Jefa Mujer Formal)', data: nuevasSeries.datosProtegido }
+    ]);
+}
+
+inputPersonas.addEventListener('input', refrescarSimulador);
+selectZonaSim.addEventListener('change', refrescarSimulador);
+
+// ==============================================================================
+// REGRESIÓN ECONOMÉTRICA (FETCH API)
+// ==============================================================================
 let urlRegresion = "{% url 'regresion'%}";
 
 fetch(urlRegresion)
     .then(response => {
-        if (!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
+        if (!response.ok) throw new Error("Error en la respuesta de la API de regresión");
         return response.json();
     })
     .then(data => {
-        // 1. Guardamos los datos del JSON
+        // Actualizar textos y SPANs
+        document.querySelector("#sp-zona").textContent = data.Coeficientes.Efecto_Zona_Rural + " puntos";
+        document.querySelector("#sp-trab_informal").textContent = data.Coeficientes.Efecto_Trabajo_Informal + " puntos ";
+        document.querySelector("#sp-ninos").textContent = data.Coeficientes.Efecto_Por_Cada_Nino + " puntos ";
+        document.querySelector("#sp-jefe_mujer").textContent = "Jefatura Femenina (" + data.Coeficientes.Efecto_Jefe_Mujer + ") ";
+        document.querySelector("#sp-r2").textContent = `R² Ajustado de ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
+
+        document.querySelector("#var-r2").textContent = `R² Ajustado: ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
+        document.querySelector("#var-territorio").textContent = (data.Coeficientes.Constante_Intercepto > 0 ? "+" : "") + data.Coeficientes.Constante_Intercepto;
+        document.querySelector("#var-zona").textContent = (data.Coeficientes.Efecto_Zona_Rural > 0 ? "+" : "") + data.Coeficientes.Efecto_Zona_Rural;
+        document.querySelector("#var-jefe_mujer").textContent = (data.Coeficientes.Efecto_Jefe_Mujer > 0 ? "+" : "") + data.Coeficientes.Efecto_Jefe_Mujer;
+        document.querySelector("#var-adultos").textContent = (data.Coeficientes.Efecto_Personas_Hogar > 0 ? "+" : "") + data.Coeficientes.Efecto_Personas_Hogar;
+        document.querySelector("#var-ninos").textContent = (data.Coeficientes.Efecto_Por_Cada_Nino > 0 ? "+" : "") + data.Coeficientes.Efecto_Por_Cada_Nino;
+        document.querySelector("#var-trab_informal").textContent = (data.Coeficientes.Efecto_Trabajo_Informal > 0 ? "+" : "") + data.Coeficientes.Efecto_Trabajo_Informal;
+
+        // Renderizar el gráfico horizontal de coeficientes
         const datos = [
             data.Coeficientes.Efecto_Zona_Rural, 
             data.Coeficientes.Efecto_Por_Cada_Nino,  
@@ -450,172 +529,145 @@ fetch(urlRegresion)
             data.Coeficientes.Efecto_Personas_Hogar
         ];
 
-        // 2. Definimos las opciones de la gráfica AQUÍ ADENTRO con los datos reales
         const opcionesCoefHoriz = {
             chart: { type: 'bar', height: 320, toolbar: { show: false } },
-            series: [{
-                name: 'Impacto Neto (Pts)',
-                data: datos // Ahora sí tiene los valores del JSON
-            }],
+            series: [{ name: 'Impacto Neto (Pts)', data: datos }],
             plotOptions: {
-                bar: {
-                    horizontal: true,
-                    distributed: true,
-                    borderRadius: 4,
-                    dataLabels: { position: 'inside' }
-                }
+                bar: { horizontal: true, distributed: true, borderRadius: 4, dataLabels: { position: 'inside' } }
             },
             colors: ['#7c2d12', '#ef4444', '#f59e0b', '#10b981', '#059669'], 
             xaxis: {
-                categories: [
-                    'Efecto Zona Rural', 
-                    'Por Cada Niño', 
-                    'Trabajo Informal', 
-                    'Jefatura Femenina',
-                    'Por Miembro del Hogar'
-                ],
+                categories: ['Efecto Zona Rural', 'Por Cada Niño', 'Trabajo Informal', 'Jefatura Femenina', 'Por Miembro del Hogar'],
                 labels: { style: { fontSize: '11px', fontWeight: 500 } }
             },
             grid: { borderColor: '#f1f5f9' },
             legend: { show: false }
         };
 
-        // 3. Creamos y renderizamos la gráfica en el momento exacto en que llegan los datos
-        const chartCoefHoriz = new ApexCharts(document.querySelector("#grafico-coeficientes-horizontal"), opcionesCoefHoriz);
+        chartCoefHoriz = new ApexCharts(document.querySelector("#grafico-coeficientes-horizontal"), opcionesCoefHoriz);
         chartCoefHoriz.render();
     })
     .catch(err => console.error("Error al cargar los datos de regresion: ", err));
 
+// ==============================================================================
+// FUNCIÓN PARA EXPORTAR A PDF
+// ==============================================================================
+async function exportarPDF() {
+    const elemento = document.getElementById('dashboard-content');
+    const graficos = [chartBarras, chartPie, chartCoefHoriz, chartSimulador];
 
+    try {
+        const imagenesPromesas = graficos.map(chart => {
+            if (chart) {
+                return chart.dataURI().then(({ imgURI }) => imgURI);
+            }
+            return Promise.resolve(null);
+        });
 
+        const imagenesData = await Promise.all(imagenesPromesas);
 
-    // ==============================================================================
-    // 2. ACTUALIZACIÓN DEL SIMULADOR DINÁMICO MULTIDIMENSIONAL
-    // ==============================================================================
-    const inputPersonas = document.getElementById('input-personas');
-    const selectZonaSim = document.getElementById('select-zona-sim');
+        const contenedores = [
+            "#grafico-barras",
+            "#grafico-torta",
+            "#grafico-coeficientes-horizontal",
+            "#grafico-simulador-lineas"
+        ];
 
-    // Nueva ecuación econométrica definitiva del modelo WLS (R² = 26.58%)
-    // Indice = 15.84 + 22.95*(Rural) + 2.80*(Niños) + 2.14*(Informal) - 3.58*(Personas) - 1.65*(Mujer)
-    function calcularEscenarios(totalPersonas, esRural) {
-        const datosCritico = [];
-        const datosProtegido = [];
-        
-        for (let ninos = 0; ninos <= 5; ninos++) {
-            // Perfil Crítico: Jefe hombre (Mujer=0), Trabajo Informal (Informal=1)
-            let indiceCritico = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 1 - 3.58 * totalPersonas - 1.65 * 0;
-            
-            // Perfil Protegido: Jefatura femenina (Mujer=1), Trabajo Formal (Informal=0)
-            let indiceProtegido = 15.84 + 22.95 * esRural + 2.80 * ninos + 2.14 * 0 - 3.58 * totalPersonas - 1.65 * 1;
-            
-            // Acotamos físicamente el índice en el rango real de la escala (0 a 100)
-            datosCritico.push(Math.max(0, Math.min(100, parseFloat(indiceCritico.toFixed(2)))));
-            datosProtegido.push(Math.max(0, Math.min(100, parseFloat(indiceProtegido.toFixed(2)))));
-        }
-        
-        return { datosCritico, datosProtegido };
+        contenedores.forEach((selector, index) => {
+            const container = document.querySelector(selector);
+            const imgBase64 = imagenesData[index];
+            if (container && imgBase64) {
+                container.setAttribute('data-original-html', container.innerHTML);
+                container.innerHTML = `<img src="${imgBase64}" style="width: 100%; height: auto; max-height: 280px; display: block; margin: 0 auto;" />`;
+            }
+        });
+
+        elemento.classList.add('pdf-export-mode');
+
+        const opciones = {
+            margin:       [0.3, 0.3, 0.3, 0.3],
+            filename:     'Dashboard_Inseguridad_Alimentaria_Facatativa.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css'] }
+        };
+
+        await html2pdf().set(opciones).from(elemento).save();
+
+    } catch (error) {
+        console.error("Error al generar el PDF:", error);
+    } finally {
+        elemento.classList.remove('pdf-export-mode');
+
+        const contenedores = [
+            "#grafico-barras",
+            "#grafico-torta",
+            "#grafico-coeficientes-horizontal",
+            "#grafico-simulador-lineas"
+        ];
+
+        contenedores.forEach(selector => {
+            const container = document.querySelector(selector);
+            if (container && container.hasAttribute('data-original-html')) {
+                container.innerHTML = container.getAttribute('data-original-html');
+                container.removeAttribute('data-original-html');
+            }
+        });
+
+        window.dispatchEvent(new Event('resize'));
     }
+}
 
-    // Carga inicial (Hogar de 4 personas en entorno Rural por defecto)
-    let seriesSimuladas = calcularEscenarios(parseInt(inputPersonas.value), parseInt(selectZonaSim.value));
+// ==============================================================================
+// FUNCIÓN PARA EXPORTAR A CSV
+// ==============================================================================
+function exportarCSV() {
+    const encabezados = [
+        "Zona Territorial",
+        "Puntaje Vulnerabilidad Promedio",
+        "Estado de Alerta",
+        "Total Evaluados",
+        "Total Inseguros",
+        "Porcentaje Inseguridad (%)"
+    ];
 
-    const opcionesLineasSimulador = {
-        chart: {
-            type: 'line',
-            height: 280,
-            toolbar: { show: false },
-            animations: { enabled: true, speed: 300 }
-        },
-        stroke: { width: 3, curve: 'straight' },
-        series: [
-            { name: 'Perfil Crítico (Jefe Hombre Informal)', data: seriesSimuladas.datosCritico },
-            { name: 'Perfil Protegido (Jefa Mujer Formal)', data: seriesSimuladas.datosProtegido }
+    const filas = [
+        [
+            "Centro poblado / Rural disperso",
+            `"${avg_rural}"`,
+            `"${avg_rural >= 33.3 ? 'Inseguridad Crítica' : (avg_rural >= 16.7 ? 'Riesgo / Vulnerabilidad' : 'Seguridad Alimentaria')}"`,
+            `"${'{{ total_encuestados }}'}"`,
+            `"${'{{ total_inseguros }}'}"`,
+            `"${'{{ porcentaje_inseguros }}'}"`
         ],
-        xaxis: {
-            categories: ['0 Niños', '1 Niño', '2 Niños', '3 Niños', '4 Niños', '5 Niños'],
-            title: { text: 'Estructura Familiar (Dependientes Menores de Edad)' }
-        },
-        yaxis: { min: 0, max: 80, title: { text: 'Puntaje de Inseguridad Predicho (pts)' } },
-        colors: ['#ef4444', '#10b981'],
-        grid: { borderColor: '#f1f5f9' },
-        markers: { size: 5 }
-    };
+        [
+            "Cabecera Urbana",
+            `"${avg_ubano}"`,
+            `"Seguridad Alimentaria"`,
+            `"${'{{ total_encuestados }}'}"`,
+            `"${'{{ total_inseguros }}'}"`,
+            `"${'{{ porcentaje_inseguros }}'}"`
+        ]
+    ];
 
-    const chartLineasSimulador = new ApexCharts(document.querySelector("#grafico-simulador-lineas"), opcionesLineasSimulador);
-    chartLineasSimulador.render();
+    let contenidoCSV = "\uFEFF" + encabezados.join(",") + "\n";
+    filas.forEach(fila => {
+        contenidoCSV += fila.join(",") + "\n";
+    });
 
-    // Función unificada para refrescar el gráfico cuando cambie cualquier control
-    function refrescarSimulador() {
-        const personas = parseInt(inputPersonas.value) || 1;
-        const ruralidad = parseInt(selectZonaSim.value);
-        
-        const nuevasSeries = calcularEscenarios(personas, ruralidad);
-        
-        chartLineasSimulador.updateSeries([
-            { name: 'Perfil Crítico (Jefe Hombre Informal)', data: nuevasSeries.datosCritico },
-            { name: 'Perfil Protegido (Jefa Mujer Formal)', data: nuevasSeries.datosProtegido }
-        ]);
-    }
-
-    // Escuchadores de eventos para los dos controles
-    inputPersonas.addEventListener('input', refrescarSimulador);
-    selectZonaSim.addEventListener('change', refrescarSimulador);
-    //chartCoefHoriz.render();
-
-    // Renderizado simultáneo
-    const chart = new ApexCharts(document.querySelector("#grafico-barras"), opciones);
-    chart.render();
-    const chartPie = new ApexCharts(document.querySelector("#grafico-torta"), opcionesPie);
-    chartPie.render();
-
-
-    urlRegresion ="{% url 'regresion'%}"
-    fetch(urlRegresion)
-        .then(response =>{
-            if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
-            return response.json();
-        })
-        .then(data => {
-            const varTerritorio =document.querySelector("#var-territorio")
-            const varZona =document.querySelector("#var-zona")
-            const varTrab_informal =document.querySelector("#var-trab_informal")
-            const varNinos =document.querySelector("#var-ninos")
-            const varJefe_Mujer =document.querySelector("#var-jefe_mujer")
-            const varAdultos =document.querySelector("#var-adultos")
-            const r2Ajustado =document.querySelector("#var-r2")
-
-            const sp_zona= document.querySelector("#sp-zona").textContent = data.Coeficientes.Efecto_Zona_Rural + " puntos";
-            const sp_trab_informal= document.querySelector("#sp-trab_informal").textContent = data.Coeficientes.Efecto_Trabajo_Informal + " puntos ";
-            const sp_ninos= document.querySelector("#sp-ninos").textContent = data.Coeficientes.Efecto_Por_Cada_Nino + " puntos ";
-            const sp_jefe_mujer = document.querySelector("#sp-jefe_mujer").textContent = "Jefatura Femenina (" + data.Coeficientes.Efecto_Jefe_Mujer + ")  ";
-            const sp_r2= document.querySelector("#sp-r2").textContent = `R² Ajustado de ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
-
-
-
-            console.log(data)
-
-            //R² Ajustado: 4.88%
-            r2Ajustado.textContent = `R² Ajustado: ${(data.R_cuadrado_Ajustado * 100).toFixed(2)}%`;
-
-            let signo = data.Coeficientes.Constante_Intercepto > 0 ? "+" : "";
-            varTerritorio.textContent = signo + data.Coeficientes.Constante_Intercepto;
-
-            signo = data.Coeficientes.Efecto_Zona_Rural > 0 ? "+": "" ;
-            varZona.textContent = signo + data.Coeficientes.Efecto_Zona_Rural;
-
-            signo = data.Coeficientes.Efecto_Jefe_Mujer > 0 ? "+" : "";
-            varJefe_Mujer.textContent = signo + data.Coeficientes.Efecto_Jefe_Mujer;
-
-            signo = data.Coeficientes.Efecto_Personas_Hogar > 0 ? "+" : "";
-            varAdultos.textContent = signo + data.Coeficientes.Efecto_Personas_Hogar;
-
-            signo = data.Coeficientes.Efecto_Por_Cada_Nino > 0 ? "+" : "";
-            varNinos.textContent = signo + data.Coeficientes.Efecto_Por_Cada_Nino;
-
-            signo = data.Coeficientes.Efecto_Trabajo_Informal > 0 ? "+" : "";
-            varTrab_informal.textContent = signo + data.Coeficientes.Efecto_Trabajo_Informal;
-    })
-    .catch(err => console.error("Error al cargar los datos de regresion: ", err));
-    </script>
+    const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+    
+    enlace.setAttribute('href', url);
+    enlace.setAttribute('download', 'Reporte_Vulnerabilidad_Facatativa.csv');
+    enlace.style.visibility = 'hidden';
+    
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+}
+</script>
 </body>
 </html>

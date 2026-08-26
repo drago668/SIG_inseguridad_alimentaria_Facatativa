@@ -3,8 +3,11 @@ import pandas as pd
 import statsmodels.api as sm
 from django.http import JsonResponse
 from django.db.models import Avg, Sum, Count, Case, When, Value, IntegerField,FloatField, F, ExpressionWrapper
+from gestion_usuarios.decorators import rol_requerido
+from gestion_usuarios.models import Usuario
 from .models import Hogar
 
+@rol_requerido(roles_permitidos=[Usuario.Rol.ADMINISTRADOR, Usuario.Rol.ENTIDAD])
 def dashboard_view(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'

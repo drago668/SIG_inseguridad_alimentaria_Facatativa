@@ -10,18 +10,20 @@ from .models import Vias
 from .models import Municipios
 from .models import Veredas
 from indicador_territorial.models import Hogar
+from app_capas.forms import CapaEspacialForm
 
 def mapa_facatativa_page(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'
     ]
     administrador = request.user.is_authenticated and request.user.rol in ['ADMIN']
-
+    form = CapaEspacialForm()
     es_autenticado =request.user.is_authenticated
     listado_municipios = Municipios.objects.order_by('mpio_cnmbr')
     listado_veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio='25269').values('codigo_ver','nombre_ver')
 
     contexto = {
+        'form':form,
         'municipios': listado_municipios,
         'veredas': listado_veredas,
         'administracion': es_entidad_o_admin,

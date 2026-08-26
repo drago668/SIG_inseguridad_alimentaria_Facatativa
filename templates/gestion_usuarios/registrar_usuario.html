@@ -5,17 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Usuario - Administración</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body class="bg-slate-50 min-h-screen ">
+<body class="bg-slate-50 min-h-screen">
     <header id="header" class="hidden md:flex px-6 py-3 h-16 items-center w-full justify-between bg-teal-700 text-white shadow-md z-10">
         <!-- Título e Identidad del Sistema -->
         <div class="flex items-center gap-3">
             <div class="p-2 bg-teal-800/60 rounded-lg border border-teal-500/40 text-teal-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-                </svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
             </div>
             <div>
                 <h1 class="text-base font-bold text-white leading-tight">SIG Facatativá</h1>
@@ -23,43 +21,45 @@
             </div>
         </div>
 
-
-            <!-- Separador -->
+        <!-- Navegación -->
+        <nav class="flex items-center gap-2">
             <div class="h-5 w-px bg-teal-500/50 mx-1"></div>
 
-                <a href="{% url 'registrar_usuario' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 transition-colors">
-                    <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    <span>Registrar usuario</span>
-                </a>
+            <a href="{% url 'registrar_usuario' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 transition-colors">
+                <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                <span>Registrar usuario</span>
+            </a>
 
-                <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
-                    <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{% url 'logout' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-rose-100 hover:text-white hover:bg-rose-600/80 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    <span>Salir</span>
-                </a>
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 hover:text-white hover:bg-teal-600/60 rounded-lg transition-colors">
+                <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="{% url 'logout' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-rose-100 hover:text-white hover:bg-rose-600/80 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span>Salir</span>
+            </a>
         </nav>
     </header>
 
-    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8 border border-slate-200">
-        
+    <div class="max-w-2xl mx-auto my-8 bg-white rounded-xl shadow-md p-8 border border-slate-200">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-200">
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Gestión de Usuarios</h1>
                 <p class="text-xs text-slate-500">Crear cuentas institucionales (Administrador / Entidad)</p>
             </div>
-            <a href="{% url 'mapa_facatativa' %}" class="text-sm text-slate-600 hover:bg-teal-700/40 hover:text-white border px-3 py-1.5 rounded-lg">
+            <a href="{% url 'mapa_facatativa' %}" class="text-sm text-slate-600 hover:bg-teal-700/40 hover:text-white border px-3 py-1.5 rounded-lg transition-colors">
                 Volver al mapa
             </a>
         </div>
 
+        <!-- Alertas de Error Globales -->
         {% if messages %}
             <div class="mb-6">
                 {% for message in messages %}
-                    <div class="p-3 text-sm rounded-lg border {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-200{% else %}bg-green-50 text-green-700 border-green-200{% endif %}">
-                        {{ message }}
+                    <div class="p-3.5 text-xs rounded-xl border flex items-center gap-2 {% if message.tags == 'error' %}bg-rose-50 text-rose-700 border-rose-200{% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>{{ message }}</span>
                     </div>
                 {% endfor %}
             </div>
@@ -72,13 +72,13 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label>
                     {{ form.email }}
-                    {% if form.email.errors %}<span class="text-xs text-red-500">{{ form.email.errors.0 }}</span>{% endif %}
+                    {% if form.email.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.email.errors.0 }}</span>{% endif %}
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Rol de Usuario</label>
                     {{ form.rol }}
-                    {% if form.rol.errors %}<span class="text-xs text-red-500">{{ form.rol.errors.0 }}</span>{% endif %}
+                    {% if form.rol.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.rol.errors.0 }}</span>{% endif %}
                 </div>
             </div>
 
@@ -86,18 +86,34 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombres</label>
                     {{ form.first_name }}
+                    {% if form.first_name.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.first_name.errors.0 }}</span>{% endif %}
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Apellidos</label>
                     {{ form.last_name }}
+                    {% if form.last_name.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.last_name.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono de Contacto</label>
+                    {{ form.telefono }}
+                    {% if form.telefono.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.telefono.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Dirección de Residencia / Entidad</label>
+                    {{ form.direccion }}
+                    {% if form.direccion.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.direccion.errors.0 }}</span>{% endif %}
                 </div>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contraseña Inicial</label>
                 {{ form.password }}
-                {% if form.password.errors %}<span class="text-xs text-red-500">{{ form.password.errors.0 }}</span>{% endif %}
+                {% if form.password.errors %}<span class="text-xs text-rose-500 block mt-1">{{ form.password.errors.0 }}</span>{% endif %}
             </div>
 
             <div class="pt-4 flex justify-end">
@@ -107,6 +123,32 @@
             </div>
         </form>
     </div>
+
+    <!-- MODAL DE ÉXITO -->
+    {% if mostrar_modal_exito %}
+    <div id="modal-exito" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all animate-in fade-in zoom-in duration-200">
+            <!-- Icono Éxito -->
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+
+            <h3 class="text-base font-bold text-slate-800 mb-1">¡Registro Exitoso!</h3>
+            <p class="text-xs text-slate-500 mb-6">
+                La cuenta para <strong class="text-slate-700 font-semibold">{{ usuario_creado_email }}</strong> ha sido creada correctamente en el sistema.
+            </p>
+
+            <div class="flex flex-col gap-2">
+                <a href="{% url 'mapa_facatativa' %}" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-2.5 rounded-lg shadow-sm transition-colors">
+                    Volver al Mapa
+                </a>
+                <button type="button" onclick="document.getElementById('modal-exito').remove();" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-2.5 rounded-lg transition-colors">
+                    Registrar Otro Usuario
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
 </body>
 </html>

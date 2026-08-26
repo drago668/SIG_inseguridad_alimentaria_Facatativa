@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import RegexValidator
 from django.db import models
 
 class UsuarioManager(BaseUserManager):
@@ -30,6 +31,19 @@ class Usuario(AbstractUser):
         choices=Rol.choices,
         default=Rol.CIUDADANO
     )
+    direccion = models.CharField('Dirección de Residencia', max_length=255, blank=True, null=True)
+    
+    validador_telefono = RegexValidator(
+        regex=r'^\+?1?\d{7,15}$',
+        message="El número de teléfono debe ingresarse en formato: '+573001234567'. De 7 a 15 dígitos."
+    )
+    telefono = models.CharField(
+        'Teléfono de Contacto',
+        validators=[validador_telefono],
+        max_length=16,
+        blank=True,
+        null=True
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -41,37 +55,3 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return f"{self.email} ({self.get_rol_display()})"
-
-"""
-class Administrador(models.Model):
-    id_administrador = models.IntegerField(primary_key=True)
-    nombre_usuario = models.CharField(max_length=255, blank=True, null=True)
-    contrasena = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'administrador'
-
-
-class RolesUsuario(models.Model):
-    id_rol_usuario = models.IntegerField(primary_key=True)
-    nombre_rol = models.CharField(max_length=100, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'roles_usuario'
-
-
-class Usuario(models.Model):
-    id_usuario = models.IntegerField(primary_key=True)
-    nombre = models.CharField(max_length=255, blank=True, null=True)
-    correo = models.CharField(max_length=255, blank=True, null=True)
-    contrasena = models.CharField(max_length=255, blank=True, null=True)
-    entidad = models.CharField(max_length=255, blank=True, null=True)
-    id_rol_usuario = models.ForeignKey(RolesUsuario, models.DO_NOTHING, db_column='id_rol_usuario', blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'usuario'
-
-"""

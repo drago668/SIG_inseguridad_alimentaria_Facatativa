@@ -1,0 +1,22 @@
+/* Estilos forzados durante la exportación a PDF */
+.pdf-export-mode {
+    max-width: 750px !important;
+    width: 750px !important;
+    margin: 0 auto !important;
+    padding: 10px !important;
+}
+
+/* Colapsa todas las rejillas a 1 columna para evitar desbordamiento lateral */
+.pdf-export-mode .grid,
+.pdf-export-mode .grid-cols-1,
+.pdf-export-mode .grid-cols-2,
+.pdf-export-mode .grid-cols-3,
+.pdf-export-mode .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+}
+
+/* Ajuste de fuentes y espaciado de tarjetas */
+.pdf-export-mode h1 { font-size: 1.25rem !important; }
+.pdf-export-mode h2 { font-size: 1rem !important; }
+.pdf-export-mode table { font-size: 10px !important; }

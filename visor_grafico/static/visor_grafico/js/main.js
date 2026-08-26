@@ -418,3 +418,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+//Modal de cargar capas###########################################################################################################################
+const modal = document.getElementById('modal-cargar-capa');
+const btnAbrir = document.getElementById('btn-abrir-modal');
+const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+const btnCancelar = document.getElementById('btn-cancelar-modal');
+
+// Función para abrir el modal (quitar la clase 'hidden')
+btnAbrir.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+    console.log('se presiono el boton')
+});
+
+// Función para cerrar el modal (agregar la clase 'hidden')
+const cerrarModal = () => {
+    modal.classList.add('hidden');
+};
+
+btnCerrarModal.addEventListener('click', cerrarModal);
+btnCancelar.addEventListener('click', cerrarModal);
+
+
+
+// Cargar la capa GeoJSON generada desde PostGIS hacia el visor Leaflet
+export async function cargarCapaEnMapa(capaId, nombreCapa) {
+    try {
+        const response = await fetch(`/capas/api/geojson/${capaId}/`);
+        const geojsonData = await response.json();
+
+        const nuevaCapaLeaflet = L.geoJSON(geojsonData, {
+            style: {
+                color: '#0d9488',
+                weight: 2,
+                fillColor: '#14b8a6',
+                fillOpacity: 0.3
+            },
+            onEachFeature: (feature, layer) => {
+                if (feature.properties) {
+                    // Popup automático con la tabla de atributos de la entidad
+                    let contenido = `<div class="p-2 text-xs"><strong>${nombreCapa}</strong><hr class="my-1"/>`;
+                    for (const [clave, valor] of Object.entries(feature.properties)) {
+                        contenido += `<b>${clave}:</b> ${valor}<br/>`;
+                    }
+                    contenido += `</div>`;
+                    layer.bindPopup(contenido);
+                }
+            }
+        }).addTo(map);
+
+        // Centrar el visor dinámicamente en la extensión (extent) de la capa cargada
+        map.fitBounds(nuevaCapaLeaflet.getBounds());
+        
+        // Agregar al control de capas
+        layerControl.addOverlay(nuevaCapaLeaflet, nombreCapa);
+
+    } catch (error) {
+        console.error("Error al cargar la capa en el mapa:", error);
+    }
+}
+
+
+
