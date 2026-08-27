@@ -85,3 +85,28 @@ class Veredas(models.Model):
     class Meta:
         managed = False
         db_table = 'veredas'
+
+class ZonaUrbana(models.Model):
+    ogc_fid = models.AutoField(primary_key=True)
+    geom = models.MultiPolygonField(srid=900914, blank=True, null=True)
+    dpto_ccdgo = models.CharField(blank=True, null=True)
+    mpio_ccdgo = models.CharField(blank=True, null=True)
+    mpio_cdpmp = models.CharField(blank=True, null=True)
+    clas_ccdgo = models.CharField(blank=True, null=True)
+    setr_ccdgo = models.CharField(blank=True, null=True)
+    setr_ccnct = models.CharField(blank=True, null=True)
+    secr_ccdgo = models.CharField(blank=True, null=True)
+    secr_ccnct = models.CharField(blank=True, null=True)
+    zu_ccdgo = models.CharField(blank=True, null=True)
+    zu_cdivi = models.CharField(blank=True, null=True)
+    zu_cnmbre = models.CharField(blank=True, null=True)
+    zu_ccnct = models.CharField(blank=True, null=True)
+    zu_narea = models.FloatField(blank=True, null=True)
+    zu_naltd = models.FloatField(blank=True, null=True)
+    zu_nano = models.IntegerField(blank=True, null=True)
+    shape_leng = models.FloatField(blank=True, null=True)
+    shape_area = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'zona_urbana'
