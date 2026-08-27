@@ -127,7 +127,7 @@ export function crearCapaZonaRural(data) {
                 <div style="font-family: sans-serif; padding: 0.25rem;">
                     <h4 style="margin: 0 0 0.5rem 0; color: #1e293b;">${props.nombre_zona}</h4>
                     <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
-                    <p style="margin: 4px 0; color: #b91c1c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
+                    <p style="margin: 4px 0; color: #b91c1c ;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
                     <p style="margin: 4px 0; font-size: 0.85rem;">🏠 Hogares Registrados: ${props.total_hogares}</p>
                     <p style="margin: 4px 0; font-size: 0.85rem;">👶 Carga Infantil Promedio: ${props.promedio_ninos}</p>
@@ -146,12 +146,15 @@ export function crearCapaZonaUrbana(data) {
         onEachFeature: function(feature, layer){
             const props = feature.properties;
             layer.bindPopup(`
-                <b>Zona geografica:</b> ${props.nombre_zona || "Nombre zona sin nombre"}<br>
-                <b>Tipo_zona:</b> ${props.tipo_zona || "Zona no disponible"}<br>
-                <b>Indice inseguridad:</b> ${props.promedio_indice}<br>
-                <b>Numero total de hogares:</b> ${props.total_hogares || "No existe informacion"}<br>
-                <b>Numero Promedio de niños:</b> ${props.promedio_ninos || "No existe informacion"}<br>
-                <b>Tasa de informalidad:</b> ${props.tasa_informalidad || "No existe informacion"}<br>
+                <div style="font-family: sans-serif; padding: 0.25rem;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1e293b;">${props.nombre_zona}</h4>
+                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
+                    <p style="margin: 4px 0; color: #2cb91c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
+                    <p style="margin: 4px 0; font-size: 0.85rem;">🏠 Hogares Registrados: ${props.total_hogares}</p>
+                    <p style="margin: 4px 0; font-size: 0.85rem;">👶 Carga Infantil Promedio: ${props.promedio_ninos}</p>
+                    <p style="margin: 4px 0; font-size: 0.85rem;">💼 Tasa Informalidad: ${props.tasa_informalidad}%</p>
+                </div>
             `)
         }
     })
