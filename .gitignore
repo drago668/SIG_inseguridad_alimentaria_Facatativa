@@ -20,4 +20,5 @@ env/
 
 # Archivos de pruebas
 *.csv
+*.zip
 requirements copy.txt
