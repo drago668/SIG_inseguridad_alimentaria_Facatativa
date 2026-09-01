@@ -1,31 +1,36 @@
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core.serializers import serialize
 import json
-
 from .models import CapaEspacial, ElementoVectorial
 from .forms import CapaEspacialForm
 from .services import procesar_capa_vectorial
 
 def cargar_capa(request):
+    mostrar_modal_exito = False
     if request.method == 'POST':
         form = CapaEspacialForm(request.POST, request.FILES)
         if form.is_valid():
             capa = form.save()
-            
+            mostrar_modal_exito = True
             if capa.formato not in ['WFS', 'GEOTIFF'] and capa.archivo:
                 try:
                     procesar_capa_vectorial(capa.id)
                 except Exception as e:
                     print(f"Error procesando la capa: {e}")
+            messages.success(request, "¡La capa espacial se ha procesado y cargado correctamente!", extra_tags="modal_exito")
 
-            # En lugar de buscar 'lista_capas', redirigimos de nuevo a la vista principal del visor
             return redirect(request.META.get('HTTP_REFERER', '/mapa_facatativa.html/'))
     else:
         form = CapaEspacialForm()
-
-    return render(request, 'capas/cargar.html', {'form': form})
+    
+    context = {
+        'form': form,
+        'mostrar_modal_exito': mostrar_modal_exito,
+    }
+    return render(request, 'capas/cargar.html', context)
 
 
 def listar_capas_api(request):
@@ -71,6 +76,7 @@ def eliminar_capa_api(request, capa_id):
     try:
         capa = get_object_or_404(CapaEspacial, id=capa_id)
         capa.delete()  # Elimina geometrías (cascade) y archivo físico (override delete)
+        messages.success(request, "¡La capa espacial se ha eliminado correctamente!", extra_tags="modal_borrado")
         return JsonResponse({'status': 'ok', 'message': 'Capa eliminada correctamente'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

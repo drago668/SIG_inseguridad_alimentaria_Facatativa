@@ -261,6 +261,17 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div>
+                    <label for="cortes-slct" class="block text-xs font-semibold text-slate-600 uppercase mb-1">filtro de tiempo</label>
+                    <select name="" id="cortes-slct" class="w-full bg-slate-50 text-slate-700 text-sm rounded-lg border border-slate-200 p-2.5 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        <option value="">Selecciona un corte</option>
+                        {% for corte in cortes %}
+                            <option value="{{corte.id_corte}}">{{corte.nombre_corte}}</option>
+                        {% empty %}
+                            <option value="">No hay cortes registrados</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
             <!-- Panel de Exportación -->
@@ -352,6 +363,54 @@
             </div>
         </div>
     </div>
+{% if messages %}
+    {% for message in messages %}
+        {% if "modal_exito" in message.extra_tags %}
+        <div id="modal-exito" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all animate-in fade-in zoom-in duration-200">
+                <!-- Icono Éxito -->
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+
+                <h3 class="text-base font-bold text-slate-800 mb-1">¡Carga Exitosa!</h3>
+                <p class="text-xs text-slate-500 mb-6">
+                    La capa ha sido creada correctamente en el sistema.
+                </p>
+
+                <div class="flex flex-col gap-2">
+                    <a href="{% url 'mapa_facatativa' %}" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-2.5 rounded-lg shadow-sm transition-colors">
+                        Volver al Mapa
+                    </a>
+            </div>
+        </div>
+        {% endif %}
+        {% if "modal_borrado" in message.extra_tags %}
+        <div id="modal-exito" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all animate-in fade-in zoom-in duration-200">
+                <!-- Icono Éxito -->
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+
+                <h3 class="text-base font-bold text-slate-800 mb-1">¡Eliminacion exitosa!</h3>
+                <p class="text-xs text-slate-500 mb-6">
+                    La cuenta para <strong class="text-slate-700 font-semibold">{{ usuario_creado_email }}</strong> ha sido creada correctamente en el sistema.
+                </p>
+
+                <div class="flex flex-col gap-2">
+                    <a href="{% url 'mapa_facatativa' %}" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-2.5 rounded-lg shadow-sm transition-colors">
+                        Volver al Mapa
+                    </a>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+
+
 
 
 </body>

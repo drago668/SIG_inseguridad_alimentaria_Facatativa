@@ -10,13 +10,13 @@ from .models import Vias
 from .models import Municipios
 from .models import Veredas
 from .models import ZonaUrbana
-from indicador_territorial.models import Hogar
+from indicador_territorial.models import Hogar,Corte
 from app_capas.forms import CapaEspacialForm
-
 def mapa_facatativa_page(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'
     ]
+    cortes = Corte.objects.order_by('id_corte')
     nombre_user = f"{request.user.first_name} {request.user.last_name}" if request.user.is_authenticated else None
     administrador = request.user.is_authenticated and request.user.rol in ['ADMIN']
     form = CapaEspacialForm()
@@ -26,6 +26,7 @@ def mapa_facatativa_page(request):
 
     contexto = {
         'form':form,
+        'cortes': cortes,
         'municipios': listado_municipios,
         'veredas': listado_veredas,
         'administracion': es_entidad_o_admin,
