@@ -4,6 +4,8 @@ from django.contrib import messages
 from .forms import RegistroUsuarioForm, CustomLoginForm
 from .decorators import rol_requerido
 from .models import Usuario
+from gestion_usuarios.emails import correo_bienvenida
+from django.urls import reverse
 
 def login_view(request):
     """Maneja el inicio de sesión mediante correo y contraseña."""
@@ -40,9 +42,19 @@ def registrar_usuario_view(request):
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():  
+            password = form.cleaned_data.get('password')
             usuario_creado = form.save()
-            mostrar_modal_exito = True
             usuario_creado_email = usuario_creado.email
+
+            contexto = {
+                'nombre': usuario_creado.first_name,
+                'email': usuario_creado_email,
+                'password': password,
+                'login_url': request.build_absolute_uri(reverse('login'))
+            }
+            correo_bienvenida(contexto)
+            mostrar_modal_exito = True
+            
             # Reiniciamos el formulario limpio tras el éxito
             form = RegistroUsuarioForm()
         else:

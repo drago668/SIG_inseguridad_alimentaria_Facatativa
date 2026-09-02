@@ -339,6 +339,7 @@
         const urlVeredasMpio ="{% url 'veredas_filter_geojson' %}"
         const urlZonaRural ="{% url 'inseguridad_rural' %}"
         const urlZonaUrbana ="{% url 'inseguridad_urbana'%}"
+        const admin ="{% es_administrador %}"
     </script>
 
     <script 
@@ -346,7 +347,6 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
     crossorigin="anonymous"></script>
 
-    <!--<script src="{% static 'visor_grafico/js/map.js'%}"></script>-->
     <script type="module" src="{% static 'visor_grafico/js/main.js' %}"></script>
     <script type="module" src="{% static 'visor_grafico/js/capas_mapa.js' %}"></script>
 

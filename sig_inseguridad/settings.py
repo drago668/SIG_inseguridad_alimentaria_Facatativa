@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-import environ
-import os
+import environ, os
+
 env =environ.Env(
     DEBUG =(bool, False)
 )
@@ -111,7 +111,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
 TIME_ZONE = 'UTC'
 
@@ -125,7 +125,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Esto le dice a Django que busque carpetas "static" dentro de cada una de tus aplicaciones
+
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
+
+# apartado de envio de correos
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = env('USER_MAIL')
+EMAIL_HOST_PASSWORD = env('USER_MAIL_PASSWORD')
+EMAIL_USE_TLS = True

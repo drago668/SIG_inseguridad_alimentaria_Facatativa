@@ -1,12 +1,9 @@
 import { map, layerControl } from "./mapBase.js";
-// Objeto global para almacenar las capas de Leaflet activas por su ID
 const capasActivas = {};
 
-// 1. Obtener la lista de capas creadas desde el backend Django
 async function cargarListaCapas() {
     const container = document.getElementById('lista-capas-container');
     
-    // Verificación defensiva si el contenedor no existe en el DOM
     if (!container) return;
 
     try {
@@ -61,16 +58,13 @@ async function cargarListaCapas() {
     }
 }
 
-// 2. Alternar entre renderizar y remover la capa en Leaflet
 async function alternarCapa(capaId, nombreCapa, visible) {
     if (visible) {
         if (!capasActivas[capaId]) {
             try {
-                // Petición a la vista que genera el GeoJSON desde PostGIS
                 const response = await fetch(`/capas/api/geojson/${capaId}/`);
                 const geojsonData = await response.json();
 
-                // Crear capa GeoJSON en Leaflet
                 const layerLeaflet = L.geoJSON(geojsonData, {
                     style: function(feature) {
                         return {
@@ -81,7 +75,6 @@ async function alternarCapa(capaId, nombreCapa, visible) {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        // Crear emergente dinámico con atributos
                         if (feature.properties) {
                             let popupContent = `<div class="p-1 max-h-48 overflow-y-auto text-xs">`;
                             popupContent += `<strong class="text-teal-700">${nombreCapa}</strong><hr class="my-1"/>`;
@@ -94,11 +87,9 @@ async function alternarCapa(capaId, nombreCapa, visible) {
                     }
                 });
 
-                // Guardar referencia y añadir al mapa
                 capasActivas[capaId] = layerLeaflet;
                 capasActivas[capaId].addTo(map);
 
-                // Auto-enfocar el mapa a los límites de la nueva capa
                 if (layerLeaflet.getBounds().isValid()) {
                     map.fitBounds(layerLeaflet.getBounds());
                 }
@@ -112,22 +103,17 @@ async function alternarCapa(capaId, nombreCapa, visible) {
             capasActivas[capaId].addTo(map);
         }
     } else {
-        // Remover del mapa si el usuario desmarca la casilla
         if (capasActivas[capaId]) {
             map.removeLayer(capasActivas[capaId]);
         }
     }
 }
 
-// Exponer la función al scope global de window por compatibilidad con módulos
 window.alternarCapa = alternarCapa;
 
-// 3. Event Listeners e Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar la lista inicial de capas
     cargarListaCapas();
 
-    // Delegación de eventos centralizada para los checkboxes
     const container = document.getElementById('lista-capas-container');
     if (container) {
         container.addEventListener('change', (event) => {
@@ -142,9 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-
-// 2. Función para solicitar la eliminación y limpiar el mapa
 async function eliminarCapa(capaId, nombreCapa) {
     if (!confirm(`¿Estás seguro de que deseas eliminar la capa "${nombreCapa}" y todas sus geometrías asociadas?`)) {
         return;
@@ -153,7 +136,6 @@ async function eliminarCapa(capaId, nombreCapa) {
     try {
         const mapaInstancia = window.map || map;
 
-        // Si la capa está renderizada en el mapa, la removemos primero
         if (capasActivas[capaId]) {
             if (mapaInstancia && typeof mapaInstancia.removeLayer === 'function') {
                 mapaInstancia.removeLayer(capasActivas[capaId]);
@@ -161,7 +143,6 @@ async function eliminarCapa(capaId, nombreCapa) {
             delete capasActivas[capaId];
         }
 
-        // Obtener el Token CSRF de las cookies de Django
         const getCookie = (name) => {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -192,7 +173,6 @@ async function eliminarCapa(capaId, nombreCapa) {
             const itemDOM = document.getElementById(`capa-item-${capaId}`);
             if (itemDOM) itemDOM.remove();
 
-            // Si no quedan más capas, mostrar el mensaje vacío
             const container = document.getElementById('lista-capas-container');
             if (container && container.children.length === 0) {
                 container.innerHTML = `<p class="text-slate-400 text-center py-3">No hay capas procesadas aún.</p>`;
@@ -209,7 +189,6 @@ async function eliminarCapa(capaId, nombreCapa) {
 
 // 3. Capturar el click sobre el botón de eliminar usando delegación de eventos
 document.addEventListener('DOMContentLoaded', () => {
-    // ... tus eventos existentes ...
 
     const container = document.getElementById('lista-capas-container');
     if (container) {

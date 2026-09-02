@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from gestion_usuarios.views import login_view, logout_view
-from app_capas.views import cargar_capa
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path("visor_grafico/", include("visor_grafico.urls")),
@@ -27,4 +27,18 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('capas/', include('app_capas.urls')),
+    path('recuperar-password/', 
+        auth_views.PasswordResetView.as_view(
+            template_name='gestion_usuarios/password_reset.html',
+            email_template_name='correos/password_reset_email.html', # Versión texto
+            html_email_template_name='correos/password_reset_email.html', # Versión HTML
+            subject_template_name='correos/password_reset_subject.txt'
+        ), 
+        name='password_reset'),
+    path('recuperar-password/enviado/', auth_views.PasswordResetDoneView.as_view(template_name='correos/password_reset_done.html'), 
+        name='password_reset_done'),
+    path('recuperar/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(template_name='correos/password_reset_confirm.html'), 
+        name='password_reset_confirm'),
+    path('recuperar-password/completo/', auth_views.PasswordResetCompleteView.as_view(template_name='correos/password_reset_complete.html'), 
+        name='password_reset_complete'),
 ]
