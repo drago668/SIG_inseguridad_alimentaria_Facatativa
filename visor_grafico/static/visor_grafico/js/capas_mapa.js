@@ -1,5 +1,7 @@
 import { map } from "./mapBase.js";
 import { ES_ADMINISTRADOR } from './config.js';
+import { mostrarExito } from './utils/ui.js';
+
 const capasActivas = {};
 
 async function cargarListaCapas() {
@@ -175,10 +177,12 @@ async function eliminarCapa(capaId, nombreCapa) {
         const result = await response.json();
 
         if (response.ok && result.status === 'ok') {
-            // Remover el elemento directamente del DOM
             const itemDOM = document.getElementById(`capa-item-${capaId}`);
             if (itemDOM) itemDOM.remove();
-
+            mostrarExito(
+                '¡Eliminación exitosa!',
+                `La capa "${nombreCapa}" y sus geometrías asociadas fueron eliminadas.`
+            );
             const container = document.getElementById('lista-capas-container');
             if (container && container.children.length === 0) {
                 container.innerHTML = `<p class="text-slate-400 text-center py-3">No hay capas procesadas aún.</p>`;
