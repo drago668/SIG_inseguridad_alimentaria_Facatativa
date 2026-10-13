@@ -1,91 +1,95 @@
 import { map, layerControl } from '../mapBase.js';
 import { URLS } from '../config.js';
-import {crearCapaVias, crearCapaMunicipios, crearCapaVeredas,
-        crearCapaZonaUrbana, crearCapaZonaRural
+import {
+    crearCapaVias, crearCapaMunicipios, crearCapaVeredas,
+    crearCapaZonaUrbana, crearCapaZonaRural
 } from '../layerTemplate.js';
 
-export let capaMunicipios;
-export let capaVeredas;
-export let capaVias;
-export let capaZonaRural;
-export let capaZonaUrbana;
+let vias, veredas, municipios, zonaUrbana, zonaRural;
 
+async function pedir(url, mensajeError) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(mensajeError);
+    return response.json();
+}
 
-fetch(URLS.vias)
-    .then(response => {
-        if (!response.ok) throw new Error("Error en la respuesta de la API de Vías");
-        return response.json();
-    })
-    .then(data => {
-        if (capaVias) {
-            map.removeLayer(capaVias);
-        }
-        capaVias = crearCapaVias(data);
-        capaVias.addTo(map);
-        layerControl.addOverlay(capaVias, "Vías Principales");
-    })
-    .catch(err => console.error("Error al cargar la(s) Vias: ", err));
+function reemplazar(capaPrevia, capaNueva, { encajar, etiqueta, visible }) {
+    if (capaPrevia) map.removeLayer(capaPrevia);
+    if (visible) capaNueva.addTo(map);
+    if (encajar) map.fitBounds(capaNueva.getBounds());
+    if (etiqueta) layerControl.addOverlay(capaNueva, etiqueta);
+    return capaNueva;
+}
 
-// renderizar capa veredas
-fetch(URLS.veredas)
-    .then(response => {
-        if (!response.ok) throw new Error("Error en la respuesta de la API de Veredas");
-        return response.json();
-    })
-    .then(data => {
-        if (capaVeredas) {
-            map.removeLayer(capaVeredas);
-        }
-        capaVeredas = crearCapaVeredas(data);
-        capaVeredas.addTo(map);
-        map.fitBounds(capaVeredas.getBounds());
-        layerControl.addOverlay(capaVeredas, "Veredas");
-    })
-    .catch(err => console.error("Error al cargar la(s) veredas: ", err));
+function alternarVisibilidad(capa, visible) {
+    if (!capa) return;
+    if (visible) {
+        capa.addTo(map);
+    } else {
+        map.removeLayer(capa);
+    }
+}
 
-// renderizar capa municipios
-fetch(URLS.municipio)
-    .then(response =>{
-        if(!response.ok) throw new Error("Error en la respuesta de la API de Municipios");
-        return response.json();
-    })
-    .then(data => {
-        if (capaMunicipios){
-            map.removeLayer(capaMunicipios);
-        }
-        capaMunicipios = crearCapaMunicipios(data);
-        capaMunicipios.addTo(map);
-        map.fitBounds(capaMunicipios.getBounds());
-        layerControl.addOverlay(capaMunicipios, "Municipio");
-    })
-    .catch(err => console.error("Error al cargar lo(s) Municipios: ", err));
+export function cargarVias(mpio = null, opciones = {}) {
+    const { encajar = false, etiqueta = null, visible = true } = opciones;
+    const url = mpio ? `${URLS.vias}?mpio=${mpio}` : URLS.vias;
+    return pedir(url, 'Error en la API de vías').then(data => {
+        vias = reemplazar(vias, crearCapaVias(data), { encajar, etiqueta, visible });
+    });
+}
 
-// cargar capas de zona geografica (zona urbana, zona rural)#####################################################
-fetch(URLS.zonaUrbana)
-    .then(response =>{
-        if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
-        return response.json();
-    })
-    .then(data => {
-        if(capaZonaUrbana){
-            map.removeLayer(capaZonaUrbana);
-        }
-        capaZonaUrbana = crearCapaZonaUrbana(data);
-        capaZonaUrbana.addTo(map);
-    })
-    .catch(err => console.error("Error al cargar la zona urbana: ", err));
+export function cargarVeredas(mpio = null, opciones = {}) {
+    const { encajar = false, etiqueta = null, visible = true } = opciones;
+    const url = mpio ? `${URLS.veredas}?mpio=${mpio}` : URLS.veredas;
+    return pedir(url, 'Error en la API de veredas').then(data => {
+        veredas = reemplazar(veredas, crearCapaVeredas(data), { encajar, etiqueta, visible });
+    });
+}
 
+export function cargarMunicipios(mpio = null, opciones = {}) {
+    const { encajar = true, etiqueta = null, visible = true } = opciones;
+    const url = mpio ? `${URLS.municipio}?mpio=${mpio}` : URLS.municipio;
+    return pedir(url, 'Error en la API de municipios').then(data => {
+        municipios = reemplazar(municipios, crearCapaMunicipios(data), { encajar, etiqueta, visible });
+    });
+}
 
-fetch(URLS.zonaRural)
-    .then(response =>{
-        if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(rural)");
-        return response.json();
-    })
-    .then(data => {
-        if(capaZonaRural){
-            map.removeLayer(capaZonaRural);
-        }
-        capaZonaRural = crearCapaZonaRural(data);
-        capaZonaRural.addTo(map);
-    })
-    .catch(err => console.error("Error al cargar la zona rural: ", err));
+export function cargarZonaUrbana(mpio = null, opciones = {}) {
+    const { encajar = false, etiqueta = null, visible = true } = opciones;
+    const url = mpio ? `${URLS.zonaUrbana}?mpio=${mpio}` : URLS.zonaUrbana;
+    return pedir(url, 'Error en la API de zona urbana').then(data => {
+        zonaUrbana = reemplazar(zonaUrbana, crearCapaZonaUrbana(data), { encajar, etiqueta, visible });
+    });
+}
+
+export function cargarZonaRural(mpio = null, opciones = {}) {
+    const { encajar = false, etiqueta = null, visible = true } = opciones;
+    const url = mpio ? `${URLS.zonaRural}?mpio=${mpio}` : URLS.zonaRural;
+    return pedir(url, 'Error en la API de zona rural').then(data => {
+        zonaRural = reemplazar(zonaRural, crearCapaZonaRural(data), { encajar, etiqueta, visible });
+    });
+}
+
+export function cargarVeredasConFiltro(vda) {
+    return pedir(`${URLS.veredas}?vda=${vda}`, 'Error en la API de veredas').then(data => {
+        veredas = reemplazar(veredas, crearCapaVeredas(data), { encajar: false, etiqueta: null, visible: true });
+    });
+}
+
+export function cargarViasConFiltro(tipo) {
+    return pedir(`${URLS.vias}?tipo=${tipo}`, 'Error en la API de vías').then(data => {
+        vias = reemplazar(vias, crearCapaVias(data), { encajar: false, etiqueta: null, visible: true });
+    });
+}
+
+export function cambiarVisibilidadMunicipio(visible) { alternarVisibilidad(municipios, visible); }
+export function cambiarVisibilidadVeredas(visible) { alternarVisibilidad(veredas, visible); }
+export function cambiarVisibilidadVias(visible) { alternarVisibilidad(vias, visible); }
+export function cambiarVisibilidadZonaUrbana(visible) { alternarVisibilidad(zonaUrbana, visible); }
+export function cambiarVisibilidadZonaRural(visible) { alternarVisibilidad(zonaRural, visible); }
+
+cargarVias(null, { etiqueta: 'Vías Principales' });
+cargarVeredas(null, { encajar: true, etiqueta: 'Veredas' });
+cargarMunicipios(null, { etiqueta: 'Municipio' });
+cargarZonaUrbana();
+cargarZonaRural();

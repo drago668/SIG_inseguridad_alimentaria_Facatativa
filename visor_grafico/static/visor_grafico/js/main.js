@@ -1,9 +1,14 @@
-import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas, crearCapaZonaRural, crearCapaZonaUrbana } from "./layerTemplate.js";
 import { map, layerControl } from "./mapBase.js";
 import { URLS, ES_ADMINISTRADOR } from './config.js';
 import './export/imagen.js';  
 import './exportar_pdf.js';
-import './capas/capa.js';
+import {
+    cargarVias, cargarVeredas, cargarMunicipios,
+    cargarZonaUrbana, cargarZonaRural,
+    cargarVeredasConFiltro, cargarViasConFiltro,
+    cambiarVisibilidadMunicipio, cambiarVisibilidadVeredas,
+    cambiarVisibilidadVias, cambiarVisibilidadZonaUrbana, cambiarVisibilidadZonaRural
+} from './capas/capa.js';
 
 
 const slctMunicipio = document.querySelector('#municipios-slct');
@@ -59,196 +64,45 @@ if (ES_ADMINISTRADOR){
 // filtrar capa municipios con base en los select
 slctMunicipio.addEventListener('change', (e) => {
     const slcted = e.target.value;
-    console.log("Municipio seleccionado:", slcted);
-    const urlFiltradaMpios= `${URLS.municipio}?mpio=${slcted}`;
-    const urlFiltradaVias= `${URLS.vias}?mpio=${slcted}`;
-    const urlFiltradaVdas= `${URLS.veredas}?mpio=${slcted}`;
-    const urlFilterVdas= `${URLS.veredasPorMunicipio}?mpio=${slcted}`;
 
-    fetch(urlFiltradaMpios)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la API de municipios");
-            return response.json();
-        })
-        .then(data => {
-            if (capaMunicipios) map.removeLayer(capaMunicipios);
-            console.log("funciono:", data);
+    cargarMunicipios(slcted);
+    cargarVias(slcted);
+    cargarVeredas(slcted);
+    cargarZonaUrbana(slcted, { visible: checkUrbano.checked });
+    cargarZonaRural(slcted, { visible: checkRural.checked });
 
-            capaMunicipios = crearCapaMunicipios(data);
-            capaMunicipios.addTo(map);
-            map.fitBounds(capaMunicipios.getBounds());
-        })
-        .catch(err => console.error("Error al filtrar los muncipios: ", err));
-    fetch(urlFiltradaVias)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la API de vias");
-            return response.json();
-        })
-        .then(data =>{
-            if(capaVias) map.removeLayer(capaVias);
-            capaVias =crearCapaVias(data);
-            capaVias.addTo(map);
-        })
-        .catch(err => console.error("Error al filtrar las vias: ", err));
-    fetch(urlFiltradaVdas)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la API de vias");
-            return response.json();
-        })
-        .then(data =>{
-            if(capaVeredas) map.removeLayer(capaVeredas);
-            capaVeredas = crearCapaVeredas(data);
-            capaVeredas.addTo(map);
-        })
-        .catch(err => console.error("Error al filtrar los muncipios: ", err));
-    
-    fetch(urlFilterVdas)
+    fetch(`${URLS.veredasPorMunicipio}?mpio=${slcted}`)
         .then(response => response.json())
         .then(data => {
-            console.log("veredas encontradas: ", data);
-            const selectVereda = document.getElementById('select-veredas');
-            if (slctVereda) {
-                slctVereda.innerHTML = '<option value="">Seleccione una vereda</option>';
-                data.forEach(vereda => {
-                    const option = document.createElement('option');
-                    option.value = vereda.codigo_ver;
-                    option.textContent = vereda.nombre_ver;
-                    slctVereda.appendChild(option);
-                });
-            }
-        }).catch(error => console.error('Error cargando veredas:', error));
-
-    fetch(`${URLS.zonaUrbana}?mpio=${slcted}`)
-        .then(r => r.json())
-        .then(data => {
-            if (capaZonaUrbana) map.removeLayer(capaZonaUrbana);
-            capaZonaUrbana = crearCapaZonaUrbana(data);
-            if (checkUrbano.checked) capaZonaUrbana.addTo(map);
-        });
-
-    fetch(`${URLS.zonaRural}?mpio=${slcted}`)
-        .then(r => r.json())
-        .then(data => {
-            if (capaZonaRural) map.removeLayer(capaZonaRural);
-            capaZonaRural = crearCapaZonaRural(data);
-            if (checkRural.checked) capaZonaRural.addTo(map);
-        });
+            slctVereda.innerHTML = '<option value="">Seleccione una vereda</option>';
+            data.forEach(vereda => {
+                const option = document.createElement('option');
+                option.value = vereda.codigo_ver;
+                option.textContent = vereda.nombre_ver;
+                slctVereda.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando veredas:', error));
 });
 
 // filtrar con base en los select #####################################################################################
 // filtrar capa veredas con base en los select
 slctVereda.addEventListener('change', (e) => {
-    const slcted = e.target.value;
-    console.log("Vereda seleccionada:", slcted);
-    const urlFiltrada= `${URLS.veredas}?vda=${slcted}`;
-
-    fetch(urlFiltrada)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la API de Veredas: ");
-            return response.json();
-        })
-        .then(data => {
-
-            if (capaVeredas) map.removeLayer(capaVeredas);
-
-            capaVeredas = crearCapaVeredas(data);
-            capaVeredas.addTo(map);
-        })
-        .catch(err => console.error("Error al filtrar las veredas:", err));
+    cargarVeredasConFiltro(e.target.value);
 });
 
 // filtrar capa vias con base en los select
 slctVia.addEventListener('change', (e) => {
-    const slcted = e.target.value;
-    console.log("Via seleccionada:", slcted);
-    const urlFiltrada= `${URLS.vias}?tipo=${slcted}`;
-
-    fetch(urlFiltrada)
-        .then(response => {
-            if (!response.ok) throw new Error("Error en la API de Veredas: ");
-            return response.json();
-        })
-        .then(data => {
-
-            if (capaVias) map.removeLayer(capaVias);
-
-            capaVias = crearCapaVias(data);
-            capaVias.addTo(map);
-        })
-        .catch(err => console.error("Error al filtrar las vias:", err));
+    cargarViasConFiltro(e.target.value);
 });
 
 
 // activar o desactivar capas#########################################################################
-checkMunicipio.addEventListener('change', (e)=>{
-    const ocultarMostrar = e.target.checked;
-    console.log('esta marcado: el municipio',ocultarMostrar);
-
-    if (capaMunicipios){
-        if(ocultarMostrar){
-            capaMunicipios.addTo(map);
-        } else {
-            map.removeLayer(capaMunicipios);
-        }
-    }
-});
-
-
-checkVeredas.addEventListener('change', (e) =>{
-    const ocultarMostrar =e.target.checked;
-    console.log('esta marcada la vereda: ', ocultarMostrar);
-
-    if(capaVeredas){
-        if(ocultarMostrar){
-            capaVeredas.addTo(map);
-        } else {
-            map.removeLayer(capaVeredas);
-        }
-    }
-});
-
-
-checkVias.addEventListener('change', (e) =>{
-    const ocultarMostrar =e.target.checked;
-    console.log('esta marcada la via: ',ocultarMostrar);
-
-    if(capaVias){
-        if(ocultarMostrar){
-            capaVias.addTo(map);
-        } else {
-            map.removeLayer(capaVias);
-        }
-    }
-});
-
-
-checkUrbano.addEventListener('change', (e) =>{
-    const ocultarMostrar =e.target.checked;
-    console.log('esta marcada la urbana: ',ocultarMostrar);
-
-    if(capaZonaUrbana){
-        if(ocultarMostrar){
-            capaZonaUrbana.addTo(map);
-        } else {
-            map.removeLayer(capaZonaUrbana);
-        }
-    }
-});
-
-
-checkRural.addEventListener('change', (e) =>{
-    const ocultarMostrar =e.target.checked;
-    console.log('esta marcada la zona rural: ',ocultarMostrar);
-
-    if(capaZonaRural){
-        if(ocultarMostrar){
-            capaZonaRural.addTo(map);
-        } else {
-            map.removeLayer(capaZonaRural);
-        }
-    }
-});
-
+checkMunicipio.addEventListener('change', (e) => cambiarVisibilidadMunicipio(e.target.checked));
+checkVeredas.addEventListener('change', (e) => cambiarVisibilidadVeredas(e.target.checked));
+checkVias.addEventListener('change', (e) => cambiarVisibilidadVias(e.target.checked));
+checkUrbano.addEventListener('change', (e) => cambiarVisibilidadZonaUrbana(e.target.checked));
+checkRural.addEventListener('change', (e) => cambiarVisibilidadZonaRural(e.target.checked));
 
 
 //Modal de cargar capas###########################################################################################################################
