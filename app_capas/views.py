@@ -76,7 +76,6 @@ def eliminar_capa_api(request, capa_id):
     try:
         capa = get_object_or_404(CapaEspacial, id=capa_id)
         capa.delete()  # Elimina geometrías (cascade) y archivo físico (override delete)
-        messages.success(request, "¡La capa espacial se ha eliminado correctamente!", extra_tags="modal_borrado")
         return JsonResponse({'status': 'ok', 'message': 'Capa eliminada correctamente'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

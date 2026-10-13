@@ -1,8 +1,8 @@
 import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas, crearCapaZonaRural, crearCapaZonaUrbana } from "./layerTemplate.js";
 import { map, layerControl } from "./mapBase.js";
-import { toggleLoading } from './utils/dom.js';
-import { exportarMapaPDF } from './exportar_pdf.js';
 import { URLS, ES_ADMINISTRADOR } from './config.js';
+import './export/imagen.js';  
+import './exportar_pdf.js';
 
 
 const slctMunicipio = document.querySelector('#municipios-slct');
@@ -14,8 +14,6 @@ const checkVeredas = document.querySelector('#chk-veredas');
 const checkVias = document.querySelector('#chk-vias');
 const checkUrbano = document.querySelector('#chk-urbano');
 const checkRural = document.querySelector('#chk-rural');
-const btnPdf = document.querySelector('#descargar_pdf')
-const btnPng = document.querySelector('#descargar_png')
 
 export let capaMunicipios;
 export let capaVeredas;
@@ -338,73 +336,6 @@ fetch(URLS.zonaRural)
     .catch(err => console.error("Error al cargar la zona rural: ", err));
 
 
-
-
-function exportarMapaImagen(formato = 'png') {
-    toggleLoading(true);
-
-    setTimeout(() => {
-        const mapaNodo = document.getElementById('map');
-
-        if (!mapaNodo) {
-            alert('No se encontró el contenedor del mapa.');
-            toggleLoading(false);
-            return;
-        }
-
-
-        const opciones = {
-            quality: 0.95,
-            bgcolor: '#ffffff',
-            filter: (node) => {
-                return (node.tagName !== 'SCRIPT');
-            }
-        };
-
-        const metodoExportar = formato === 'jpg' 
-            ? domtoimage.toJpeg(mapaNodo, opciones) 
-            : domtoimage.toPng(mapaNodo, opciones);
-
-        metodoExportar
-            .then((dataUrl) => {
-                const link = document.createElement('a');
-                link.download = `mapa_facatativa.${formato}`;
-                link.href = dataUrl;
-                link.click();
-                link.remove();
-            })
-            .catch((error) => {
-                console.error('Error al exportar con dom-to-image:', error);
-                alert('Ocurrió un error al generar la imagen del mapa.');
-            })
-            .finally(() => {
-                toggleLoading(false);
-            });
-    }, 200);
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Capturar referencias de los botones
-    const btnPng = document.getElementById('descargar_png');
-    const btnPdf = document.getElementById('descargar_pdf');
-    const btnJpg = document.getElementById('descargar_jpg'); 
-
-    // Asignar el evento 'click' a cada función
-    if (btnPng) {
-        btnPng.addEventListener('click', () => exportarMapaImagen('png'));
-    }
-
-    if (btnJpg) {
-        btnJpg.addEventListener('click', () => exportarMapaImagen('jpg'));
-    }
-
-    if (btnPdf) {
-        btnPdf.addEventListener('click', () => exportarMapaPDF());
-    }
-});
-
-
 //Modal de cargar capas###########################################################################################################################
 if (ES_ADMINISTRADOR){
     const modal = document.getElementById('modal-cargar-capa');
@@ -426,58 +357,6 @@ if (ES_ADMINISTRADOR){
     btnCancelar.addEventListener('click', cerrarModal);
 }
 
-    export async function cargarCapaEnMapa(capaId, nombreCapa) {
-        try {
-            const response = await fetch(`/capas/api/geojson/${capaId}/`);
-            const geojsonData = await response.json();
-
-            const nuevaCapaLeaflet = L.geoJSON(geojsonData, {
-                style: {
-                    color: '#0d9488',
-                    weight: 2,
-                    fillColor: '#14b8a6',
-                    fillOpacity: 0.3
-                },
-                onEachFeature: (feature, layer) => {
-                    if (feature.properties) {
-                        let contenido = `<div class="p-2 text-xs"><strong>${nombreCapa}</strong><hr class="my-1"/>`;
-                        for (const [clave, valor] of Object.entries(feature.properties)) {
-                            contenido += `<b>${clave}:</b> ${valor}<br/>`;
-                        }
-                        contenido += `</div>`;
-                        layer.bindPopup(contenido);
-                    }
-                }
-            }).addTo(map);
-
-            map.fitBounds(nuevaCapaLeaflet.getBounds());
-            
-            layerControl.addOverlay(nuevaCapaLeaflet, nombreCapa);
-
-        } catch (error) {
-            console.error("Error al cargar la capa en el mapa:", error);
-        }
-    }
-
-
-
-export async function cargarDatosInseguridad2025() {
-    try {
-        const respuesta = await fetch(URLS.datosMapa2025);
-        if (!respuesta.ok) {
-            throw new Error(`Error HTTP: ${respuesta.status}`);
-        }
-        const json = await respuesta.json();
-        if (json.status === 'success') {
-            return json.data; 
-        } else {
-            throw new Error(json.message || "Error al procesar inferencia ML");
-        }
-    } catch (error) {
-        console.error("No se pudieron cargar los datos de FIES 2025:", error);
-        return null;
-    }
-}
 
 // #########################################################################################################################################
 

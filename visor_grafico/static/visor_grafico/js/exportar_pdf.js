@@ -223,3 +223,11 @@ export async function exportarMapaPDF() {
         toggleLoading(false);
     }
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnPdf = document.getElementById('descargar_pdf');
+    if (btnPdf) {
+        btnPdf.addEventListener('click', () => exportarMapaPDF());
+    }
+});

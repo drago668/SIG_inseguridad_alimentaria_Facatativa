@@ -36,7 +36,7 @@ async function cargarListaCapas() {
             ` : '';
 
             const itemHTML = `
-                <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition-all">
+                <div id="capa-item-${capa.id}" class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition-all">
                     <div class="flex items-center gap-2.5 overflow-hidden">
                         <input type="checkbox" 
                             id="capa-chk-${capa.id}" 
