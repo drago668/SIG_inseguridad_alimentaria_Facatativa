@@ -132,8 +132,10 @@ STATICFILES_FINDERS = [
 
 # apartado de envio de correos
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.resend.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = env('USER_MAIL')
-EMAIL_HOST_PASSWORD = env('USER_MAIL_PASSWORD')
+EMAIL_HOST_PASSWORD = env('RESEND_API_KEY')
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Notificaciones <notificaciones@sigsa.tech>'
+SERVER_EMAIL = 'notificaciones@sigsa.tech'

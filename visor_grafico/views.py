@@ -1,17 +1,18 @@
 import json
-from django.db.models import F
+import pandas as pd
+import os
+from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import SpatialReference
-from django.contrib.gis.geos import Polygon, MultiPolygon
-from django.db.models import Avg, Sum, Count, Case, When, Value, IntegerField,FloatField, F
-from .models import Vias
-from .models import Municipios
-from .models import Veredas
-from .models import ZonaUrbana
-from indicador_territorial.models import Hogar,Corte
+from .models import Vias, Municipios, Veredas, ZonaUrbana
+from indicador_territorial.models import Corte
 from app_capas.forms import CapaEspacialForm
+from django.views.decorators.csrf import csrf_exempt
+from .apps import VisorGraficoConfig
+
+
 def mapa_facatativa_page(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'
@@ -51,10 +52,12 @@ def facatativa_geojson_api(request):
     """
     try:
         mpio = request.GET.get('mpio', None)
+        depto = request.GET.get('depto', '25')
         if mpio != None:
             facatativa_qs = Municipios.objects.filter(mpio_cdpmp= mpio)
         else:
-            facatativa_qs = Municipios.objects.filter(mpio_cdpmp='25269')
+            # facatativa_qs = Municipios.objects.filter(mpio_cdpmp='25269')
+            facatativa_qs = Municipios.objects.filter(mpio_cdpmp__startswith=depto)
 
         ref_origen = SpatialReference(9377)   # Origen Único de Colombia
         ref_destino = SpatialReference(4326)  # WGS84 para Leaflet
@@ -150,37 +153,14 @@ def veredas_facatativa_geojson(request):
     except Exception as e:
         return JsonResponse({'error':str(e)}, statu=500)
 
-
-def _obtener_estadisticas_inseguridad():
-
-    hogares = Hogar.objects.select_related('vivienda', 'jefe_hogar')
-    hogares_calculados = hogares.annotate(
-        w_nevera=Case(When(nevera=0, then=Value(16.66)), default=Value(0), output_field=FloatField()),
-        w_cocina=Case(When(cocina=0, then=Value(16.66)), default=Value(0), output_field=FloatField()),
-        w_acueducto=Case(When(vivienda__acueducto=0, then=Value(11.11)), default=Value(0), output_field=FloatField()),
-        w_alcantarillado=Case(When(vivienda__alcantarillado=0, then=Value(11.11)), default=Value(0), output_field=FloatField()),
-        w_agua_7_dias=Case(When(agua_llega_7_dias=0, then=Value(11.11)), default=Value(0), output_field=FloatField()),
-        w_combustible=Case(When(combustible_para_cocinar__id_combustible__gte=6, then=Value(33.34)), default=Value(0), output_field=FloatField()),
-    ).annotate(
-        indice_inseguridad=F('w_nevera') + F('w_cocina') + F('w_acueducto') + F('w_alcantarillado') + F('w_agua_7_dias') + F('w_combustible')
-    )
-
-    datos_zonas = hogares_calculados.values('zona_geografica__nombre_zona').annotate(
-        promedio_indice=Avg('indice_inseguridad'),
-        total_hogares=Sum('zona_geografica__fex'),
-        promedio_ninos=Avg('cantidad_ninos'),
-        tasa_informalidad=Avg(Case(When(jefe_hogar__trabajo_informal=1, then=Value(100.0)), default=Value(0.0), output_field=FloatField()))
-    )
-
-    m_urbano = next((z for z in datos_zonas if z['zona_geografica__nombre_zona'] == 'Cabecera'), None)
-    m_rural = next((z for z in datos_zonas if z['zona_geografica__nombre_zona'] == 'Centro poblado, Rural disperso'), None)
-
-    return m_urbano,m_rural
+# ==============================================================================
+# CAPAS ESPACIALES BASE (RURAL Y URBANA)
+# ==============================================================================
 
 
-def _construir_geojson(queryset, estadisticas, tipo_zona_nombre, prefijo_id):
-    ref_origen = SpatialReference(9377)   # Origen Único de Colombia
-    ref_destino = SpatialReference(4326)  # WGS84 para Leaflet
+def _construir_geojson(queryset, tipo_zona_nombre, prefijo_id):
+    ref_origen = SpatialReference(9377)
+    ref_destino = SpatialReference(4326)
     features = []
 
     for zona in queryset:
@@ -196,36 +176,86 @@ def _construir_geojson(queryset, estadisticas, tipo_zona_nombre, prefijo_id):
                 "properties": {
                     "nombre_zona": zona.zu_cnmbre,
                     "tipo_zona": tipo_zona_nombre,
-                    "promedio_indice": round(estadisticas['promedio_indice'] or 0, 1) if estadisticas else 0.0,
-                    "total_hogares": round(estadisticas['total_hogares']) if estadisticas else 0,
-                    "promedio_ninos": round(estadisticas['promedio_ninos'] or 0, 1) if estadisticas else 0.0,
-                    "tasa_informalidad": round(estadisticas['tasa_informalidad'] or 0, 1) if estadisticas else 0.0
                 }
             })
 
-    return {
-        "type": "FeatureCollection",
-        "features": features
-    }
+    return {"type": "FeatureCollection", "features": features}
 
 
 def geojson_inseguridad_rural(request):
     try:
-        _, m_rural = _obtener_estadisticas_inseguridad()
-        veredas_qs = ZonaUrbana.objects.filter(mpio_cdpmp='25269').exclude(zu_cnmbre='FACATATIVÁ')
-        
-        geojson_final = _construir_geojson(veredas_qs, m_rural, "Rural", "rural")
-        return JsonResponse(geojson_final, safe=False)
+        mpio = request.GET.get('mpio', '25269')
+        veredas_qs = ZonaUrbana.objects.filter(mpio_cdpmp=mpio).exclude(zu_cnmbre='FACATATIVÁ')
+        return JsonResponse(_construir_geojson(veredas_qs, "Rural", "rural"), safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
 def geojson_inseguridad_urbana(request):
     try:
-        m_urbano, _ = _obtener_estadisticas_inseguridad()
-        zona_urbana_qs = ZonaUrbana.objects.filter(mpio_cdpmp='25269', zu_cnmbre='FACATATIVÁ')
-        
-        geojson_final = _construir_geojson(zona_urbana_qs, m_urbano, "Cabecera urbana", "urbano")
-        return JsonResponse(geojson_final, safe=False)
+        mpio = request.GET.get('mpio', '25269')
+        zona_urbana_qs = ZonaUrbana.objects.filter(mpio_cdpmp=mpio, zu_cnmbre='FACATATIVÁ')
+        return JsonResponse(_construir_geojson(zona_urbana_qs, "Cabecera urbana", "urbano"), safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+def obtener_datos_mapa_2025(request):
+    try:
+        # 1. Si ya se calculó previamente, devolver inmediatamente desde la memoria (Caché en 1ms)
+        if VisorGraficoConfig.cache_fies_2025 is not None:
+            return JsonResponse({'status': 'success', 'data': VisorGraficoConfig.cache_fies_2025, 'cached': True})
+
+        # 2. Verificar que el modelo y las columnas estén cargados
+        if VisorGraficoConfig.ml_model is None or VisorGraficoConfig.ml_columns is None:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'El modelo XGBoost o las columnas no están cargados en memoria.'
+            }, status=500)
+
+        # 3. Validar existencia del archivo CSV
+        ruta_csv = os.path.join(settings.BASE_DIR, 'visor_grafico', 'ml_assets', 'X_test_2025.csv')
+        if not os.path.exists(ruta_csv):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No se encontró el archivo X_test_2025.csv en visor_grafico/ml_assets/'
+            }, status=404)
+
+        # 4. Cargar microdatos
+        df_test = pd.read_csv(ruta_csv)
+
+        # 5. Normalizar DIVIPOLA a 5 dígitos y extraer factor de expansión (FEX)
+        divipola_serie = df_test['DIVIPOLA'].astype(int).astype(str).str.zfill(5)
+        fex_serie = df_test['FEX_C_num']
+
+        # 6. Alinear columnas estrictamente con el orden de entrenamiento
+        df_alineado = df_test.reindex(columns=VisorGraficoConfig.ml_columns, fill_value=0)
+
+        # 7. Inferencia con XGBoost (probabilidad de inseguridad moderada o severa)
+        probabilidades = VisorGraficoConfig.ml_model.predict_proba(df_alineado)[:, 1]
+
+        # 8. Cálculo de prevalencia FIES municipal vectorizado (rápido y oficial DANE)
+        df_calculo = pd.DataFrame({
+            'DIVIPOLA': divipola_serie,
+            'FEX_C_num': fex_serie,
+            'producto_ponderado': fex_serie * probabilidades
+        })
+
+        agrupado = df_calculo.groupby('DIVIPOLA').agg({
+            'producto_ponderado': 'sum',
+            'FEX_C_num': 'sum'
+        }).reset_index()
+
+        agrupado['prevalencia_fies'] = ((agrupado['producto_ponderado'] / agrupado['FEX_C_num']) * 100).round(2)
+
+        # 9. Guardar en caché de memoria para todas las futuras peticiones
+        datos_json = agrupado[['DIVIPOLA', 'prevalencia_fies']].to_dict(orient='records')
+        VisorGraficoConfig.cache_fies_2025 = datos_json
+
+        return JsonResponse({'status': 'success', 'data': datos_json, 'cached': False})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+

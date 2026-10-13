@@ -22,3 +22,11 @@ env/
 *.csv
 *.zip
 requirements copy.txt
+
+
+.scannerwork
+.DS_Store
+.vscode/
+input.css
+tailwindcss/
+output.css

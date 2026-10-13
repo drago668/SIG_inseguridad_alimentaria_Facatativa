@@ -17,18 +17,3 @@ def correo_bienvenida(contexto):
     msg.send()
 
 
-
-"""
-#conversion de template a txto para enviarla en el correo
-user = 'usuario de prueba'
-html_message = render_to_string('template.html', {'user': user})
-
-subject ='titulo del correo'
-text_content = 'cuerpo del correo para motores de correo que solo reciben texto plano'
-html_message = '<p> aqui en caso de motores que <strong>si rendericen html</strong></p>'
-# Como se envian correos
-msg = EmailMultiAlternatives(subject, text_content, 'sig.inseguridad.alimentaria@gmail.com', ['danielestebanriveragomez03@gmail.com'])
-# Aqui se agrega el contenido html
-msg.attach_alternative(html_message, "text/html")
-msg.send()
-"""
