@@ -1,6 +1,9 @@
 import { crearCapaVias, crearCapaMunicipios, crearCapaVeredas, crearCapaZonaRural, crearCapaZonaUrbana } from "./layerTemplate.js";
 import { map, layerControl } from "./mapBase.js";
-//import { toggleMedicion } from './mapBase.js';
+import { toggleLoading } from './utils/dom.js';
+import { exportarMapaPDF } from './exportar_pdf.js';
+import { URLS, ES_ADMINISTRADOR } from './config.js';
+
 
 const slctMunicipio = document.querySelector('#municipios-slct');
 const slctVereda = document.querySelector('#veredas-slct');
@@ -27,35 +30,37 @@ import {
 } from './mapBase.js';
 
 // Elementos DOM
-const btnMenu = document.getElementById('btn-medir-menu');
-const dropdown = document.getElementById('dropdown-medicion');
-const btnCerrar = document.getElementById('btn-cerrar-menu');
-const btnNueva = document.getElementById('btn-nueva-medicion');
-const btnLimpiar = document.getElementById('btn-limpiar-todo');
+if (ES_ADMINISTRADOR){
+    const btnMenu = document.getElementById('btn-medir-menu');
+    const dropdown = document.getElementById('dropdown-medicion');
+    const btnCerrar = document.getElementById('btn-cerrar-menu');
+    const btnNueva = document.getElementById('btn-nueva-medicion');
+    const btnLimpiar = document.getElementById('btn-limpiar-todo');
 
-// Abrir / Cerrar Menú
-btnMenu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle('hidden');
-});
+    // Abrir / Cerrar Menú
+    btnMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+    });
 
-btnCerrar.addEventListener('click', () => {
-    dropdown.classList.add('hidden');
-});
+    btnCerrar.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+    });
 
-// Acción: Iniciar Nueva Medición
-btnNueva.addEventListener('click', () => {
-    activarModoMedicion();
-    dropdown.classList.add('hidden');
-});
+    // Acción: Iniciar Nueva Medición
+    btnNueva.addEventListener('click', () => {
+        activarModoMedicion();
+        dropdown.classList.add('hidden');
+    });
 
-// Acción: Borrar Todo
-btnLimpiar.addEventListener('click', () => {
-    limpiarTodasLasMediciones();
-});
+    // Acción: Borrar Todo
+    btnLimpiar.addEventListener('click', () => {
+        limpiarTodasLasMediciones();
+    });
+}
 
 // renderizar capa vias
-fetch(urlViasGeoJSON)
+fetch(URLS.vias)
     .then(response => {
         if (!response.ok) throw new Error("Error en la respuesta de la API de Vías");
         return response.json();
@@ -73,7 +78,7 @@ fetch(urlViasGeoJSON)
 
 
 // renderizar capa veredas
-fetch(urlVeredasGeoJSON)
+fetch(URLS.veredas)
     .then(response => {
         if (!response.ok) throw new Error("Error en la respuesta de la API de Veredas");
         return response.json();
@@ -91,7 +96,7 @@ fetch(urlVeredasGeoJSON)
 
 
 // renderizar capa municipios
-fetch(urlMunicipioGeoJSON)
+fetch(URLS.municipio)
     .then(response =>{
         if(!response.ok) throw new Error("Error en la respuesta de la API de Municipios");
         return response.json();
@@ -113,10 +118,10 @@ fetch(urlMunicipioGeoJSON)
 slctMunicipio.addEventListener('change', (e) => {
     const slcted = e.target.value;
     console.log("Municipio seleccionado:", slcted);
-    const urlFiltradaMpios= `${urlMunicipioGeoJSON}?mpio=${slcted}`;
-    const urlFiltradaVias= `${urlViasGeoJSON}?mpio=${slcted}`;
-    const urlFiltradaVdas= `${urlVeredasGeoJSON}?mpio=${slcted}`;
-    const urlFilterVdas= `${urlVeredasMpio}?mpio=${slcted}`;
+    const urlFiltradaMpios= `${URLS.municipio}?mpio=${slcted}`;
+    const urlFiltradaVias= `${URLS.vias}?mpio=${slcted}`;
+    const urlFiltradaVdas= `${URLS.veredas}?mpio=${slcted}`;
+    const urlFilterVdas= `${URLS.veredasPorMunicipio}?mpio=${slcted}`;
 
     fetch(urlFiltradaMpios)
         .then(response => {
@@ -170,6 +175,22 @@ slctMunicipio.addEventListener('change', (e) => {
                 });
             }
         }).catch(error => console.error('Error cargando veredas:', error));
+
+    fetch(`${URLS.zonaUrbana}?mpio=${slcted}`)
+        .then(r => r.json())
+        .then(data => {
+            if (capaZonaUrbana) map.removeLayer(capaZonaUrbana);
+            capaZonaUrbana = crearCapaZonaUrbana(data);
+            if (checkUrbano.checked) capaZonaUrbana.addTo(map);
+        });
+
+    fetch(`${URLS.zonaRural}?mpio=${slcted}`)
+        .then(r => r.json())
+        .then(data => {
+            if (capaZonaRural) map.removeLayer(capaZonaRural);
+            capaZonaRural = crearCapaZonaRural(data);
+            if (checkRural.checked) capaZonaRural.addTo(map);
+        });
 });
 
 // filtrar con base en los select #####################################################################################
@@ -177,7 +198,7 @@ slctMunicipio.addEventListener('change', (e) => {
 slctVereda.addEventListener('change', (e) => {
     const slcted = e.target.value;
     console.log("Vereda seleccionada:", slcted);
-    const urlFiltrada= `${urlVeredasGeoJSON}?vda=${slcted}`;
+    const urlFiltrada= `${URLS.veredas}?vda=${slcted}`;
 
     fetch(urlFiltrada)
         .then(response => {
@@ -198,7 +219,7 @@ slctVereda.addEventListener('change', (e) => {
 slctVia.addEventListener('change', (e) => {
     const slcted = e.target.value;
     console.log("Via seleccionada:", slcted);
-    const urlFiltrada= `${urlViasGeoJSON}?tipo=${slcted}`;
+    const urlFiltrada= `${URLS.vias}?tipo=${slcted}`;
 
     fetch(urlFiltrada)
         .then(response => {
@@ -287,7 +308,7 @@ checkRural.addEventListener('change', (e) =>{
 });
 
 // cargar capas de zona geografica (zona urbana, zona rural)#####################################################
-fetch(urlZonaUrbana)
+fetch(URLS.zonaUrbana)
     .then(response =>{
         if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(urbana)");
         return response.json();
@@ -302,7 +323,7 @@ fetch(urlZonaUrbana)
     .catch(err => console.error("Error al cargar la zona urbana: ", err));
 
 
-fetch(urlZonaRural)
+fetch(URLS.zonaRural)
     .then(response =>{
         if(!response.ok) throw new Error("Error en la respuesta de la API de zona geografica(rural)");
         return response.json();
@@ -316,85 +337,50 @@ fetch(urlZonaRural)
     })
     .catch(err => console.error("Error al cargar la zona rural: ", err));
 
-// Función para mostrar / ocultar el spinner de carga
-function toggleLoading(show) {
-    const overlay = document.getElementById('loading_overlay');
-    if (!overlay) return;
-    
-    if (show) {
-        overlay.classList.remove('hidden');
-    } else {
-        overlay.classList.add('hidden');
-    }
-}
 
-// Exportar a Imagen (PNG / JPG) con leaflet-image
+
+
 function exportarMapaImagen(formato = 'png') {
-    toggleLoading(true); // Mostrar estado de carga
-
-    // Pequeña pausa con setTimeout para asegurar que el DOM dibuje el modal de carga antes de bloquear la CPU
-    setTimeout(() => {
-        leafletImage(map, function(err, canvas) {
-            try {
-                if (err) {
-                    console.error('Error al generar la imagen:', err);
-                    alert('Ocurrió un error al procesar el mapa.');
-                    return;
-                }
-
-                const mimeType = formato === 'jpg' ? 'image/jpeg' : 'image/png';
-                const imageURI = canvas.toDataURL(mimeType, 0.95);
-
-                const link = document.createElement('a');
-                link.download = `mapa_exportado.${formato}`;
-                link.href = imageURI;
-                link.click();
-                link.remove();
-            } finally {
-                toggleLoading(false); // Ocultar estado de carga siempre
-            }
-        });
-    }, 100);
-}
-
-// Exportar a PDF con leaflet-image + jsPDF
-function exportarMapaPDF() {
     toggleLoading(true);
 
     setTimeout(() => {
-        leafletImage(map, function(err, canvas) {
-            try {
-                if (err) {
-                    console.error('Error al generar el PDF:', err);
-                    alert('Ocurrió un error al procesar el PDF.');
-                    return;
-                }
+        const mapaNodo = document.getElementById('map');
 
-                const { jsPDF } = window.jspdf;
-                const imgData = canvas.toDataURL('image/png');
-                
-                const orientation = canvas.width > canvas.height ? 'l' : 'p';
-                const pdf = new jsPDF(orientation, 'mm', 'a4');
+        if (!mapaNodo) {
+            alert('No se encontró el contenedor del mapa.');
+            toggleLoading(false);
+            return;
+        }
 
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
 
-                const ratio = canvas.width / canvas.height;
-                let width = pdfWidth - 20;
-                let height = width / ratio;
-
-                if (height > pdfHeight - 20) {
-                    height = pdfHeight - 20;
-                    width = height * ratio;
-                }
-
-                pdf.addImage(imgData, 'PNG', 10, 10, width, height);
-                pdf.save('mapa_exportado.pdf');
-            } finally {
-                toggleLoading(false);
+        const opciones = {
+            quality: 0.95,
+            bgcolor: '#ffffff',
+            filter: (node) => {
+                return (node.tagName !== 'SCRIPT');
             }
-        });
-    }, 100);
+        };
+
+        const metodoExportar = formato === 'jpg' 
+            ? domtoimage.toJpeg(mapaNodo, opciones) 
+            : domtoimage.toPng(mapaNodo, opciones);
+
+        metodoExportar
+            .then((dataUrl) => {
+                const link = document.createElement('a');
+                link.download = `mapa_facatativa.${formato}`;
+                link.href = dataUrl;
+                link.click();
+                link.remove();
+            })
+            .catch((error) => {
+                console.error('Error al exportar con dom-to-image:', error);
+                alert('Ocurrió un error al generar la imagen del mapa.');
+            })
+            .finally(() => {
+                toggleLoading(false);
+            });
+    }, 200);
 }
 
 
@@ -402,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Capturar referencias de los botones
     const btnPng = document.getElementById('descargar_png');
     const btnPdf = document.getElementById('descargar_pdf');
-    const btnJpg = document.getElementById('descargar_jpg'); // Opcional si agregas botón JPG
+    const btnJpg = document.getElementById('descargar_jpg'); 
 
     // Asignar el evento 'click' a cada función
     if (btnPng) {
@@ -420,63 +406,248 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 //Modal de cargar capas###########################################################################################################################
-const modal = document.getElementById('modal-cargar-capa');
-const btnAbrir = document.getElementById('btn-abrir-modal');
-const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-const btnCancelar = document.getElementById('btn-cancelar-modal');
+if (ES_ADMINISTRADOR){
+    const modal = document.getElementById('modal-cargar-capa');
+    const btnAbrirModal = document.getElementById('abrir-modal');
+    const btnAbrir = document.getElementById('btn-abrir-modal');
+    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+    const btnCancelar = document.getElementById('btn-cancelar-modal');
 
-// Función para abrir el modal (quitar la clase 'hidden')
-btnAbrir.addEventListener('click', () => {
-    modal.classList.remove('hidden');
-    console.log('se presiono el boton')
-});
+    btnAbrirModal.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        console.log('se presiono el boton')
+    });
 
-// Función para cerrar el modal (agregar la clase 'hidden')
-const cerrarModal = () => {
-    modal.classList.add('hidden');
-};
+    const cerrarModal = () => {
+        modal.classList.add('hidden');
+    };
 
-btnCerrarModal.addEventListener('click', cerrarModal);
-btnCancelar.addEventListener('click', cerrarModal);
+    btnCerrarModal.addEventListener('click', cerrarModal);
+    btnCancelar.addEventListener('click', cerrarModal);
+}
 
+    export async function cargarCapaEnMapa(capaId, nombreCapa) {
+        try {
+            const response = await fetch(`/capas/api/geojson/${capaId}/`);
+            const geojsonData = await response.json();
 
-
-// Cargar la capa GeoJSON generada desde PostGIS hacia el visor Leaflet
-export async function cargarCapaEnMapa(capaId, nombreCapa) {
-    try {
-        const response = await fetch(`/capas/api/geojson/${capaId}/`);
-        const geojsonData = await response.json();
-
-        const nuevaCapaLeaflet = L.geoJSON(geojsonData, {
-            style: {
-                color: '#0d9488',
-                weight: 2,
-                fillColor: '#14b8a6',
-                fillOpacity: 0.3
-            },
-            onEachFeature: (feature, layer) => {
-                if (feature.properties) {
-                    // Popup automático con la tabla de atributos de la entidad
-                    let contenido = `<div class="p-2 text-xs"><strong>${nombreCapa}</strong><hr class="my-1"/>`;
-                    for (const [clave, valor] of Object.entries(feature.properties)) {
-                        contenido += `<b>${clave}:</b> ${valor}<br/>`;
+            const nuevaCapaLeaflet = L.geoJSON(geojsonData, {
+                style: {
+                    color: '#0d9488',
+                    weight: 2,
+                    fillColor: '#14b8a6',
+                    fillOpacity: 0.3
+                },
+                onEachFeature: (feature, layer) => {
+                    if (feature.properties) {
+                        let contenido = `<div class="p-2 text-xs"><strong>${nombreCapa}</strong><hr class="my-1"/>`;
+                        for (const [clave, valor] of Object.entries(feature.properties)) {
+                            contenido += `<b>${clave}:</b> ${valor}<br/>`;
+                        }
+                        contenido += `</div>`;
+                        layer.bindPopup(contenido);
                     }
-                    contenido += `</div>`;
-                    layer.bindPopup(contenido);
                 }
-            }
-        }).addTo(map);
+            }).addTo(map);
 
-        // Centrar el visor dinámicamente en la extensión (extent) de la capa cargada
-        map.fitBounds(nuevaCapaLeaflet.getBounds());
-        
-        // Agregar al control de capas
-        layerControl.addOverlay(nuevaCapaLeaflet, nombreCapa);
+            map.fitBounds(nuevaCapaLeaflet.getBounds());
+            
+            layerControl.addOverlay(nuevaCapaLeaflet, nombreCapa);
 
+        } catch (error) {
+            console.error("Error al cargar la capa en el mapa:", error);
+        }
+    }
+
+
+
+export async function cargarDatosInseguridad2025() {
+    try {
+        const respuesta = await fetch(URLS.datosMapa2025);
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP: ${respuesta.status}`);
+        }
+        const json = await respuesta.json();
+        if (json.status === 'success') {
+            return json.data; 
+        } else {
+            throw new Error(json.message || "Error al procesar inferencia ML");
+        }
     } catch (error) {
-        console.error("Error al cargar la capa en el mapa:", error);
+        console.error("No se pudieron cargar los datos de FIES 2025:", error);
+        return null;
     }
 }
 
+// #########################################################################################################################################
 
+// Variable global para almacenar el mapa de dimensiones por DIVIPOLA
+let mapaDimensiones = new Map();
+let capaCoropletas = null;
+let municipioSeleccionadoActual = null;
+
+// 1. Función para consumir el nuevo endpoint de dimensiones
+export async function cargarDimensionesMunicipales() {
+    try {
+        const res = await fetch(URLS.dimensionesMunicipales);
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        const json = await res.json();
+        if (json.status === 'success') {
+            console.log(json.data);
+            return json.data;
+        }
+        throw new Error(json.message || "Error al cargar dimensiones");
+    } catch (e) {
+        console.error("Error al obtener dimensiones municipales:", e);
+        return [];
+    }
+}
+
+// 2. Función matemática de Overlay: Calcula la suma de dimensiones activas
+function calcularValorOverlay(divipola) {
+    const registro = mapaDimensiones.get(divipola);
+    if (!registro) return null;
+
+    // Obtener los checkboxes de dimensiones que estén marcados
+    const checkboxesActivos = Array.from(document.querySelectorAll('.chk-dimension:checked'));
+    
+    // Si no hay ninguna dimensión activa, el valor es 0
+    if (checkboxesActivos.length === 0) return 0.0;
+
+    let sumaAportes = 0.0;
+    checkboxesActivos.forEach(chk => {
+        const campo = chk.value;
+        if (registro[campo] !== undefined) {
+            sumaAportes += parseFloat(registro[campo]) || 0.0;
+        }
+    });
+
+    return Number(sumaAportes.toFixed(2));
+}
+
+// 3. Escala oficial de colores DANE
+function getColorFIES(prevalencia) {
+    if (prevalencia === undefined || prevalencia === null) return '#cccccc'; // Sin datos
+    return prevalencia > 40.0 ? '#990000' :
+        prevalencia > 25.0 ? '#ec7014' :
+        prevalencia > 15.0 ? '#fe9929' :
+                                '#a1d99b';
+}
+
+// 4. Actualizar el panel lateral de Tailwind
+function actualizarPanelDetalle(nombre, divipola, valor) {
+    document.getElementById('det-municipio-nombre').textContent = nombre;
+    document.getElementById('det-municipio-divipola').textContent = `DIVIPOLA: ${divipola}`;
+    
+    const textoValor = (valor !== null && valor !== undefined) ? `${valor.toFixed(1)}%` : 'Sin datos';
+    document.getElementById('det-prevalencia-valor').textContent = textoValor;
+
+    const badge = document.getElementById('badge-nivel-riesgo');
+    if (valor === null || valor === undefined) {
+        badge.textContent = "Sin datos de encuesta";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600";
+    } else if (valor > 40.0) {
+        badge.textContent = "Crítico / Severo";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
+    } else if (valor > 25.0) {
+        badge.textContent = "Moderado-Alto";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700";
+    } else if (valor > 15.0) {
+        badge.textContent = "Moderado-Bajo";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700";
+    } else {
+        badge.textContent = "Bajo";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+    }
+}
+
+// 5. Inicialización: Carga paralela de GeoJSON y Dimensiones SHAP
+Promise.all([
+    fetch(URLS.municipio).then(res => res.json()),
+    cargarDimensionesMunicipales()
+]).then(([geojsonData, listaDimensiones]) => {
+    
+    // Indexar datos por DIVIPOLA a 5 dígitos
+    mapaDimensiones.clear();
+    listaDimensiones.forEach(item => {
+        const divipolaNormalizado = String(item.DIVIPOLA_SIG).padStart(5, '0');
+        mapaDimensiones.set(divipolaNormalizado, item);
+    });
+
+    // Crear capa GeoJSON
+    capaCoropletas = L.geoJSON(geojsonData, {
+        style: function (feature) {
+            const divipola = feature.properties.mpio_cdpmp;
+            const valor = calcularValorOverlay(divipola);
+            return {
+                fillColor: getColorFIES(valor),
+                weight: 1.5,
+                opacity: 1,
+                color: '#ffffff',
+                dashArray: '2',
+                fillOpacity: 0.75
+            };
+        },
+        onEachFeature: function (feature, layer) {
+            const divipola = feature.properties.mpio_cdpmp;
+            const nombre = feature.properties.mpio_cnmbr;
+
+            // Hover interactions
+            layer.on({
+                mouseover: function (e) {
+                    const l = e.target;
+                    l.setStyle({ weight: 3, color: '#0f766e', dashArray: '', fillOpacity: 0.9 });
+                    l.bringToFront();
+                },
+                mouseout: function (e) {
+                    capaCoropletas.resetStyle(e.target);
+                },
+                click: function () {
+                    municipioSeleccionadoActual = { nombre, divipola };
+                    const valor = calcularValorOverlay(divipola);
+                    actualizarPanelDetalle(nombre, divipola, valor);
+                }
+            });
+
+            // Tooltip dinámico
+            layer.bindTooltip(() => {
+                const valor = calcularValorOverlay(divipola);
+                const txt = valor !== null ? `${valor.toFixed(1)}%` : 'Sin datos';
+                return `<strong>${nombre}</strong><br>Aporte acumulado: ${txt}`;
+            });
+        }
+    });
+
+    capaCoropletas.addTo(map);
+    layerControl.addOverlay(capaCoropletas, "Vulnerabilidad FIES (SHAP)");
+
+    // 6. EVENTO DINÁMICO: Escuchar cambios en los checkboxes de dimensiones
+    const checkboxes = document.querySelectorAll('.chk-dimension');
+    checkboxes.forEach(chk => {
+        chk.addEventListener('change', () => {
+            // Repintar todos los polígonos instantáneamente sin recargar la página
+            if (capaCoropletas) {
+                capaCoropletas.eachLayer(layer => {
+                    if (layer.feature) {
+                        const divipola = layer.feature.properties.mpio_cdpmp;
+                        const nuevoValor = calcularValorOverlay(divipola);
+                        layer.setStyle({
+                            fillColor: getColorFIES(nuevoValor)
+                        });
+                    }
+                });
+            }
+
+            // Si hay un municipio activo en el panel, actualizar su valor en pantalla
+            if (municipioSeleccionadoActual) {
+                const nuevoValor = calcularValorOverlay(municipioSeleccionadoActual.divipola);
+                actualizarPanelDetalle(
+                    municipioSeleccionadoActual.nombre,
+                    municipioSeleccionadoActual.divipola,
+                    nuevoValor
+                );
+            }
+        });
+    });
+});
 

@@ -3,3 +3,53 @@
     left:0px;
     top: calc(40vh);
 }
+
+
+.leaflet-tooltip.etiqueta-mapa {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 700;
+    font-size: 9px;
+    color: #784c00;
+    text-shadow: 
+        1px  1px 2px #ffffff,
+        -1px -1px 2px #ffffff,
+        1px -1px 2px #ffffff,
+        -1px  1px 2px #ffffff;
+}
+
+.leaflet-tooltip.etiqueta-rural {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 700;
+    font-size: 9px;
+    color: #551a29;
+    text-shadow: 
+        1px  1px 2px #e2caca,
+        -1px -1px 2px #e2caca,
+        1px -1px 2px #e2caca,
+        -1px  1px 2px #e2caca;
+}
+.leaflet-tooltip.etiqueta-urbana {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 700;
+    font-size: 9px;
+    color: #3d0e68;
+    text-shadow: 
+        1px  1px 2px #eedefd,
+        -1px -1px 2px #eedefd,
+        1px -1px 2px #eedefd,
+        -1px  1px 2px #eedefd;
+}
+
+.leaflet-tile,
+.leaflet-tile-container img,
+.leaflet-container img.leaflet-tile {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}

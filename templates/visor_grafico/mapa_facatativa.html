@@ -14,7 +14,8 @@
     crossorigin="anonymous" />
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
+    <!-- <link rel="stylesheet" href="{% static 'visor_grafico/css/output.css' %}">-->
+
 
 
     <!--scripts js#############################################################################################################################################-->
@@ -27,11 +28,22 @@
 
     <!--Leaflet image js-->
     <script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
-
     <!-- html2canvas: Captura el mapa como una imagen Canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!--reemplazo de hml2canvas-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
     <!-- jsPDF: Genera el archivo PDF a partir del canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="{% static 'visor_grafico/css/estilos.css' %}">
+    <style>
+    #map.medicion-activa .leaflet-interactive {
+        pointer-events: none !important;
+    }
+    #map.medicion-activa {
+        cursor: crosshair !important;
+    }
+</style>
 </head>
 <body >
     <header id="header" class="hidden md:flex px-6 py-3 h-16 items-center w-full justify-between bg-teal-700 text-white shadow-md z-10">
@@ -65,11 +77,11 @@
 
         <!-- Navegación y Herramientas -->
         <nav class="relative z-[1000] flex items-center gap-1 lg:gap-2 text-xs font-medium text-teal-50">
-
-            <button id="btn-abrir-modal" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
+            {% if es_administrador %}
+            <button id="abrir-modal" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
                 + Nueva Capa
             </button>
-
+            {% endif %}
             <!-- Modal Cargar Capa Espacial -->
             <div id="modal-cargar-capa" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-700">
@@ -111,22 +123,24 @@
             
 
             <div class="relative inline-block text-left">
-                <!-- Botón Principal de la Navbar -->
+                {% if autenticado %}
                 <button id="btn-medir-menu" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg hover:text-white hover:bg-teal-600/60 transition-colors">
                     <svg class="w-4 h-4 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2h-1v1a1 1 0 01-1 1H8a1 1 0 01-1-1V8H6a2 2 0 01-2-2V5a2 2 0 012-2h5V4z"></path>
                     </svg>
                     <span>Medición</span>
                 </button>
-
+                {% endif %}
+                
                 <!-- Menú Desplegable Tema Claro -->
                 <div id="dropdown-medicion" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-white border border-slate-200 shadow-xl z-[9999] p-3.5 text-slate-700">
+                    
                     <!-- Cabecera -->
                     <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
                         <span class="text-xs font-semibold text-teal-800 uppercase tracking-wider">Medición de Distancias</span>
                         <button id="btn-cerrar-menu" class="text-slate-400 hover:text-slate-600 text-sm font-bold leading-none">&times;</button>
                     </div>
-
+                    
                     <!-- Botones de Acción -->
                     <div class="flex gap-2 mb-3">
                         <button id="btn-nueva-medicion" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs py-1.5 px-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center gap-1">
@@ -143,6 +157,7 @@
                         <li id="msg-vacio" class="text-slate-400 italic text-center py-2 bg-slate-50 rounded-lg border border-dashed border-slate-200">Sin mediciones aún</li>
                     </ul>
                 </div>
+                
             </div>
 
             <!-- Separador -->
@@ -166,7 +181,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span>Salir</span>
                 </a>
-            {% else %}
+                {% else %}
                 <a href="{% url 'login' %}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-teal-900 bg-white hover:bg-teal-50 rounded-lg shadow-sm transition-all active:scale-95">
                     <svg class="w-4 h-4 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                     <span>Iniciar sesión</span>
@@ -185,6 +200,70 @@
                 <h2 class="text-xl font-bold text-slate-800">Panel de Control</h2>
                 <p class="text-xs text-slate-500 mt-0.5">Gestión de capas y consulta espacial</p>
             </div>
+
+            <!-- Panel de Dimensiones SHAP -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <h3 class="text-xs font-semibold text-slate-600 uppercase tracking-wider pb-2 border-b border-slate-100">
+                    Dimensiones FIES (SHAP)
+                </h3>
+                
+                <div class="flex flex-col gap-2.5 pt-1" id="contenedor-dimensiones-shap">
+                    <!-- Vivienda y Servicios -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-vivienda" value="aporte_Vivienda_y_Servicios" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        <span>Vivienda y Servicios</span>
+                    </label>
+
+                    <!-- Trabajo e Ingresos -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-trabajo" value="aporte_Trabajo_e_Ingresos" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Trabajo e Ingresos</span>
+                    </label>
+
+                    <!-- Salud y Discapacidad -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-salud" value="aporte_Salud_y_Discapacidad" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <span>Salud y Discapacidad</span>
+                    </label>
+
+                    <!-- Educación -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-educacion" value="aporte_Educacion" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                        </svg>
+                        <span>Educación</span>
+                    </label>
+
+                    <!-- Demografía -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-demografia" value="aporte_Demografia" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>Demografía</span>
+                    </label>
+
+                    <!-- Desastres -->
+                    <label class="flex items-center gap-3 text-sm text-slate-700 font-medium cursor-pointer hover:text-teal-700 transition-colors">
+                        <input type="checkbox" id="chk-dim-desastres" value="aporte_Desastres" checked class="chk-dimension w-4 h-4 rounded text-teal-600 border-slate-300 focus:ring-teal-500">
+                        <svg class="w-4 h-4 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>Desastres</span>
+                    </label>
+                </div>
+            </div>
+            
 
             <!-- Panel de Capas -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
@@ -214,6 +293,7 @@
                     </label>
                 </div>
             </div>
+
 
             <!-- Filtros de Consulta -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -273,7 +353,7 @@
                     </select>
                 </div>
             </div>
-
+            {% if autenticado %}
             <!-- Panel de Exportación -->
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                 <div class="pb-2 border-b border-slate-100">
@@ -301,6 +381,7 @@
                     </button>
                 </div>
             </div>
+            {% endif %}
             <!-- Sección Integrada de Capas Subidas -->
             <div id="panel-capas" class="mb-6 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80">
                 <div class="flex items-center justify-between border-b border-slate-200/60 pb-2.5 mb-3">
@@ -323,38 +404,87 @@
 
         </aside>
 
-        <main class="flex-1 min-h-screen bg-gray-100"> 
-            <div id="map" class="flex w-full h-full ">
+    <main class="relative flex-1 min-h-screen bg-slate-100 overflow-hidden">
+        <!-- Contenedor del Mapa -->
+        <div id="map" class="w-full h-full z-0"></div>
+
+        <!-- Panel Flotante: Estadísticas del Municipio Seleccionado -->
+        <div id="panel-detalle-municipio" class="absolute top-27 right-5 z-[1000] w-80 bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200/80 shadow-xl transition-all">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                <span class="text-[11px] font-bold text-teal-800 uppercase tracking-wider">Municipio Seleccionado</span>
+                <span id="badge-nivel-riesgo" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    Seleccione un polígono
+                </span>
             </div>
-        </main>
+            
+            <h4 id="det-municipio-nombre" class="text-base font-bold text-slate-800">Cundinamarca</h4>
+            <p id="det-municipio-divipola" class="text-xs text-slate-400 mb-3">DIVIPOLA: --</p>
+
+            <!-- Indicador de Prevalencia FIES -->
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 mb-2">
+                <span class="text-xs text-slate-500 block">Prevalencia de Inseguridad (FIES)</span>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span id="det-prevalencia-valor" class="text-2xl font-extrabold text-slate-800">--%</span>
+                    <span class="text-xs text-slate-400 font-medium">Hogares proyectados</span>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-400 italic">
+                * Estimación calculada con el modelo XGBoost a partir de microdatos DANE.
+            </p>
+        </div>
+
+        <!-- Leyenda Cartográfica Flotante DANE -->
+        <div id="map-legend" class="absolute bottom-15 right-6 z-[1000] bg-white/95 backdrop-blur-md px-4 py-3 rounded-xl border border-slate-200/80 shadow-lg text-xs">
+            <h5 class="font-bold text-slate-700 mb-2 text-[11px] uppercase tracking-wide">Prevalencia FIES (DANE)</h5>
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded" style="background-color: #a1d99b;"></span>
+                    <span class="text-slate-600">Bajo (&le; 15.0%)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded" style="background-color: #fe9929;"></span>
+                    <span class="text-slate-600">Moderado-Bajo (15.1% - 25.0%)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded" style="background-color: #ec7014;"></span>
+                    <span class="text-slate-600">Moderado-Alto (25.1% - 40.0%)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded" style="background-color: #990000;"></span>
+                    <span class="text-slate-600">Crítico / Severo (&gt; 40.0%)</span>
+                </div>
+                <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+                    <span class="w-3.5 h-3.5 rounded" style="background-color: #cccccc;"></span>
+                    <span class="text-slate-400">Sin datos de encuesta</span>
+                </div>
+            </div>
+        </div>
+    </main>
 
     </div> 
 
-    <!--variables dinamicas para acceder desde map.js-->
-    <script>
-        const urlViasGeoJSON = "{% url 'vias_geojson' %}"
-        const urlFacatativaGeoJSON = "{% url 'facatativa_geojson' %}"
-        const urlMunicipioGeoJSON ="{% url 'facatativa_geojson' %}"
-        const urlVeredasGeoJSON ="{% url 'veredas_geojson' %}"
-        const urlVeredasMpio ="{% url 'veredas_filter_geojson' %}"
-        const urlZonaRural ="{% url 'inseguridad_rural' %}"
-        const urlZonaUrbana ="{% url 'inseguridad_urbana'%}"
-
+    <script id="app-config" type="application/json"></script>
+        {
+            "urlViasGeoJSON": "{% url 'vias_geojson' %}",
+            "urlMunicipioGeoJSON": "{% url 'facatativa_geojson' %}",
+            "urlVeredasGeoJSON": "{% url 'veredas_geojson' %}",
+            "urlVeredasMpio": "{% url 'veredas_filter_geojson' %}",
+            "urlZonaRural": "{% url 'inseguridad_rural' %}",
+            "urlZonaUrbana": "{% url 'inseguridad_urbana' %}",
+            "urlDatosMapa2025": "{% url 'datos_mapa_2025' %}",
+            "urlDimensionesMunicipales": "{% url 'dimensiones_municipales' %}",
+            "autorReporte": "{{ nombre_user|default:'Ciudadano'|escapejs }}",
+            "esAdministrador": {% if es_administrador %}true{% else %}false{% endif %}
+        }
     </script>
-
-    <script 
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-    crossorigin="anonymous"></script>
 
     <script type="module" src="{% static 'visor_grafico/js/main.js' %}"></script>
     <script type="module" src="{% static 'visor_grafico/js/capas_mapa.js' %}"></script>
 
-
-    <!-- Modal/Overlay de Carga -->
     <div id="loading_overlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 z-[9999] flex flex-col items-center justify-center backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 border border-gray-100 max-w-sm w-full mx-4">
-            <!-- Spinner animado con Tailwind -->
+
             <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             
             <div class="text-center">
@@ -388,7 +518,7 @@
         {% if "modal_borrado" in message.extra_tags %}
         <div id="modal-exito" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all animate-in fade-in zoom-in duration-200">
-                <!-- Icono Éxito -->
+
                 <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 </div>
@@ -407,11 +537,5 @@
         {% endif %}
     {% endfor %}
 {% endif %}
-
-
-
-
-
-
 </body>
 </html>

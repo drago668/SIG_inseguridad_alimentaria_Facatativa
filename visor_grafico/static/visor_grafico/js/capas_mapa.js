@@ -1,4 +1,5 @@
-import { map, layerControl } from "./mapBase.js";
+import { map } from "./mapBase.js";
+import { ES_ADMINISTRADOR } from './config.js';
 const capasActivas = {};
 
 async function cargarListaCapas() {
@@ -22,6 +23,18 @@ async function cargarListaCapas() {
 
         container.innerHTML = '';
         data.capas.forEach(capa => {
+            const botonEliminarHTML = (ES_ADMINISTRADOR) ? `
+                <button type="button" 
+                        data-eliminar-id="${capa.id}" 
+                        data-eliminar-nombre="${capa.nombre}"
+                        class="btn-eliminar-capa p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors ml-1" 
+                        title="Eliminar capa">
+                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            ` : '';
+
             const itemHTML = `
                 <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition-all">
                     <div class="flex items-center gap-2.5 overflow-hidden">
@@ -37,16 +50,9 @@ async function cargarListaCapas() {
                             <span class="text-[10px] text-slate-400 font-mono">${capa.formato} • ${capa.num_registros} ent.</span>
                         </div>
                     </div>
-                    <!-- Botón de Borrado -->
-                    <button type="button" 
-                            data-eliminar-id="${capa.id}" 
-                            data-eliminar-nombre="${capa.nombre}"
-                            class="btn-eliminar-capa p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors ml-1" 
-                            title="Eliminar capa">
-                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
+                    
+                    <!-- Se inyecta el botón condicionalmente -->
+                    ${botonEliminarHTML}
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', itemHTML);
