@@ -28,5 +28,5 @@ requirements copy.txt
 .DS_Store
 .vscode/
 input.css
-tailwindcss/
+tailwindcss
 output.css
