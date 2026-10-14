@@ -1,14 +1,15 @@
 import { map, layerControl } from "./mapBase.js";
-import { URLS, ES_ADMINISTRADOR } from './config.js';
-import './export/imagen.js';  
+import { URLS } from './config.js';
+import { cargarVias, cargarVeredas, cargarMunicipios,
+        cargarZonaUrbana, cargarZonaRural,
+        cargarVeredasConFiltro, cargarViasConFiltro,
+        cambiarVisibilidadMunicipio, cambiarVisibilidadVeredas,
+        cambiarVisibilidadVias, cambiarVisibilidadZonaUrbana,
+        cambiarVisibilidadZonaRural } from './capas/capa.js';
+import './admin/modal.js';
+import './core/medicion.js';
+import './export/imagen.js';
 import './exportar_pdf.js';
-import {
-    cargarVias, cargarVeredas, cargarMunicipios,
-    cargarZonaUrbana, cargarZonaRural,
-    cargarVeredasConFiltro, cargarViasConFiltro,
-    cambiarVisibilidadMunicipio, cambiarVisibilidadVeredas,
-    cambiarVisibilidadVias, cambiarVisibilidadZonaUrbana, cambiarVisibilidadZonaRural
-} from './capas/capa.js';
 
 
 const slctMunicipio = document.querySelector('#municipios-slct');
@@ -21,45 +22,6 @@ const checkVias = document.querySelector('#chk-vias');
 const checkUrbano = document.querySelector('#chk-urbano');
 const checkRural = document.querySelector('#chk-rural');
 
-
-// main.js
-import { 
-    activarModoMedicion, 
-    limpiarTodasLasMediciones 
-} from './mapBase.js';
-
-// Elementos DOM
-if (ES_ADMINISTRADOR){
-    const btnMenu = document.getElementById('btn-medir-menu');
-    const dropdown = document.getElementById('dropdown-medicion');
-    const btnCerrar = document.getElementById('btn-cerrar-menu');
-    const btnNueva = document.getElementById('btn-nueva-medicion');
-    const btnLimpiar = document.getElementById('btn-limpiar-todo');
-
-    // Abrir / Cerrar Menú
-    btnMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('hidden');
-    });
-
-    btnCerrar.addEventListener('click', () => {
-        dropdown.classList.add('hidden');
-    });
-
-    // Acción: Iniciar Nueva Medición
-    btnNueva.addEventListener('click', () => {
-        activarModoMedicion();
-        dropdown.classList.add('hidden');
-    });
-
-    // Acción: Borrar Todo
-    btnLimpiar.addEventListener('click', () => {
-        limpiarTodasLasMediciones();
-    });
-}
-
-
-//filtrar capas con base en los select#################################################################
 
 // filtrar capa municipios con base en los select
 slctMunicipio.addEventListener('change', (e) => {
@@ -103,28 +65,6 @@ checkVeredas.addEventListener('change', (e) => cambiarVisibilidadVeredas(e.targe
 checkVias.addEventListener('change', (e) => cambiarVisibilidadVias(e.target.checked));
 checkUrbano.addEventListener('change', (e) => cambiarVisibilidadZonaUrbana(e.target.checked));
 checkRural.addEventListener('change', (e) => cambiarVisibilidadZonaRural(e.target.checked));
-
-
-//Modal de cargar capas###########################################################################################################################
-if (ES_ADMINISTRADOR){
-    const modal = document.getElementById('modal-cargar-capa');
-    const btnAbrirModal = document.getElementById('abrir-modal');
-    const btnAbrir = document.getElementById('btn-abrir-modal');
-    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-    const btnCancelar = document.getElementById('btn-cancelar-modal');
-
-    btnAbrirModal.addEventListener('click', () => {
-        modal.classList.remove('hidden');
-        console.log('se presiono el boton')
-    });
-
-    const cerrarModal = () => {
-        modal.classList.add('hidden');
-    };
-
-    btnCerrarModal.addEventListener('click', cerrarModal);
-    btnCancelar.addEventListener('click', cerrarModal);
-}
 
 
 // #########################################################################################################################################
