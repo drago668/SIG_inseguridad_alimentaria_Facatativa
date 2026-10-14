@@ -1,73 +1,11 @@
 import { map, layerControl } from "./mapBase.js";
 import { URLS } from './config.js';
-import { cargarVias, cargarVeredas, cargarMunicipios,
-        cargarZonaUrbana, cargarZonaRural,
-        cargarVeredasConFiltro, cargarViasConFiltro,
-        cambiarVisibilidadMunicipio, cambiarVisibilidadVeredas,
-        cambiarVisibilidadVias, cambiarVisibilidadZonaUrbana,
-        cambiarVisibilidadZonaRural } from './capas/capa.js';
 import './admin/modal.js';
+import './capas/filtros.js';
 import './core/medicion.js';
 import './export/imagen.js';
 import './exportar_pdf.js';
 
-
-const slctMunicipio = document.querySelector('#municipios-slct');
-const slctVereda = document.querySelector('#veredas-slct');
-const slctVia = document.querySelector('#vias-slct');
-
-const checkMunicipio = document.querySelector('#chk-municipio');
-const checkVeredas = document.querySelector('#chk-veredas');
-const checkVias = document.querySelector('#chk-vias');
-const checkUrbano = document.querySelector('#chk-urbano');
-const checkRural = document.querySelector('#chk-rural');
-
-
-// filtrar capa municipios con base en los select
-slctMunicipio.addEventListener('change', (e) => {
-    const slcted = e.target.value;
-
-    cargarMunicipios(slcted);
-    cargarVias(slcted);
-    cargarVeredas(slcted);
-    cargarZonaUrbana(slcted, { visible: checkUrbano.checked });
-    cargarZonaRural(slcted, { visible: checkRural.checked });
-
-    fetch(`${URLS.veredasPorMunicipio}?mpio=${slcted}`)
-        .then(response => response.json())
-        .then(data => {
-            slctVereda.innerHTML = '<option value="">Seleccione una vereda</option>';
-            data.forEach(vereda => {
-                const option = document.createElement('option');
-                option.value = vereda.codigo_ver;
-                option.textContent = vereda.nombre_ver;
-                slctVereda.appendChild(option);
-            });
-        })
-        .catch(error => console.error('Error cargando veredas:', error));
-});
-
-// filtrar con base en los select #####################################################################################
-// filtrar capa veredas con base en los select
-slctVereda.addEventListener('change', (e) => {
-    cargarVeredasConFiltro(e.target.value);
-});
-
-// filtrar capa vias con base en los select
-slctVia.addEventListener('change', (e) => {
-    cargarViasConFiltro(e.target.value);
-});
-
-
-// activar o desactivar capas#########################################################################
-checkMunicipio.addEventListener('change', (e) => cambiarVisibilidadMunicipio(e.target.checked));
-checkVeredas.addEventListener('change', (e) => cambiarVisibilidadVeredas(e.target.checked));
-checkVias.addEventListener('change', (e) => cambiarVisibilidadVias(e.target.checked));
-checkUrbano.addEventListener('change', (e) => cambiarVisibilidadZonaUrbana(e.target.checked));
-checkRural.addEventListener('change', (e) => cambiarVisibilidadZonaRural(e.target.checked));
-
-
-// #########################################################################################################################################
 
 // Variable global para almacenar el mapa de dimensiones por DIVIPOLA
 let mapaDimensiones = new Map();
