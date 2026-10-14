@@ -18,7 +18,7 @@ const checkVias = document.querySelector('#chk-vias');
 const checkUrbano = document.querySelector('#chk-urbano');
 const checkRural = document.querySelector('#chk-rural');
 
-const veredaSeleccionada = document.getElementById('select-veredas');
+const veredaSeleccionada = document.getElementById('veredas-slct');
 
 slctMunicipio.addEventListener('change', (e) => {
     const mpio = e.target.value;

@@ -167,3 +167,12 @@ Promise.all([
         });
     });
 });
+
+export function obtenerRegistro(divipola) {
+    return mapaDimensiones.get(String(divipola).padStart(5, '0')) || null;
+}
+
+export function obtenerMunicipioNombre(divipola) {
+    const r = mapaDimensiones.get(String(divipola).padStart(5, '0'));
+    return r ? r.nombre_municipio : null;
+}

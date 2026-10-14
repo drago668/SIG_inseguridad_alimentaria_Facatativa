@@ -8,7 +8,8 @@ export const URLS = {
     zonaRural: CONFIG.urlZonaRural,
     zonaUrbana: CONFIG.urlZonaUrbana,
     datosMapa2025: CONFIG.urlDatosMapa2025,
-    dimensionesMunicipales: CONFIG.urlDimensionesMunicipales
+    dimensionesMunicipales: CONFIG.urlDimensionesMunicipales,
+    prevalenciaZonales: CONFIG.urlPrevalenciaZonales,
 };
 
 export const AUTOR_REPORTE = CONFIG.autorReporte;

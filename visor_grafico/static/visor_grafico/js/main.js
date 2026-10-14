@@ -4,3 +4,4 @@ import './capas/overlay.js';
 import './core/medicion.js';
 import './export/imagen.js';
 import './exportar_pdf.js';
+import './export/datos.js';
