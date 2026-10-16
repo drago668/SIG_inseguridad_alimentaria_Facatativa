@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/veredas-filter-geojson', views.obtener_veredas_por_municipio, name='veredas_filter_geojson'),
     path('api/zona_rural/', views.geojson_inseguridad_rural, name='inseguridad_rural'),
     path('api/zona_urbana/', views.geojson_inseguridad_urbana, name='inseguridad_urbana'),
+    path('api/datos-mapa-2025/', views.obtener_datos_mapa_2025, name='datos_mapa_2025'),
 ]

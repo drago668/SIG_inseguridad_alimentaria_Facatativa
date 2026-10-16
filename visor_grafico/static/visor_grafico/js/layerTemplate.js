@@ -1,4 +1,10 @@
 import { map } from "./mapBase.js"; 
+map.createPane('etiquetasPane');
+map.createPane('etiquetasIndice');
+map.getPane('etiquetasPane').style.zIndex = 400;
+map.getPane('etiquetasIndice').style.zIndex = 460;
+map.getPane('etiquetasPane').style.pointerEvents = 'none';
+map.getPane('etiquetasIndice').style.pointerEvents = 'none';
 
 // Municipio
 const estiloMunicipio = {
@@ -59,11 +65,7 @@ fillColor:  "#63427e",
 fillOpacity: 0.9      
 };
 
-// urls de consulta
-urlViasGeoJSON 
-urlFacatativaGeoJSON 
-urlMunicipioGeoJSON
-urlVeredasGeoJSON 
+
 
 export function crearCapaVias(data) {
     const viaApartada = L.geoJSON(data, {
@@ -112,51 +114,51 @@ export function crearCapaVeredas(data) {
                 <b>Municipio:</b> ${props.nom_mpio}<br>
                 <b>Area:</b> ${props.area_ha ? `${props.area_ha} h`:"No existe informacion"}<br> de informalidad:</b> ${props.tasa_informalidad || "No existe informacion"}<br>
             `);
+            if (props.nombre_ver) {
+                layer.bindTooltip(props.nombre_ver, {
+                    permanent: true,             
+                    direction: 'center',         
+                    className: 'etiqueta-mapa',  
+                    pane: 'etiquetasPane'        
+                });
+            }
         }
-    })
+    }) 
     return  veredaApartada;
 }
 
 
 export function crearCapaZonaRural(data) {
-    const rural = L.geoJSON(data, {
+    return L.geoJSON(data, {
         style: estiloRural,
-        onEachFeature: function(feature, layer){
+        onEachFeature: function(feature, layer) {
             const props = feature.properties;
             layer.bindPopup(`
                 <div style="font-family: sans-serif; padding: 0.25rem;">
                     <h4 style="margin: 0 0 0.5rem 0; color: #1e293b;">${props.nombre_zona}</h4>
-                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
-                    <p style="margin: 4px 0; color: #b91c1c ;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
+                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
+                    <p style="margin: 4px 0; color: #b91c1c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
                     <p style="margin: 4px 0; font-size: 0.85rem;">🏠 Hogares Registrados: ${props.total_hogares}</p>
-                    <p style="margin: 4px 0; font-size: 0.85rem;">👶 Carga Infantil Promedio: ${props.promedio_ninos}</p>
-                    <p style="margin: 4px 0; font-size: 0.85rem;">💼 Tasa Informalidad: ${props.tasa_informalidad}%</p>
                 </div>
             `);
         }
-    })
-    return rural
+    });
 }
-
-
 export function crearCapaZonaUrbana(data) {
-    const urbano = L.geoJSON(data, {
+    return L.geoJSON(data, {
         style: estiloUrbano,
-        onEachFeature: function(feature, layer){
+        onEachFeature: function(feature, layer) {
             const props = feature.properties;
             layer.bindPopup(`
                 <div style="font-family: sans-serif; padding: 0.25rem;">
                     <h4 style="margin: 0 0 0.5rem 0; color: #1e293b;">${props.nombre_zona}</h4>
-                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
-                    <p style="margin: 4px 0; color: #2cb91c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
+                    <p style="margin: 4px 0;"><strong>Área Territorial:</strong> ${props.tipo_zona}</p>
+                    <p style="margin: 4px 0; color: #2cb91c;"><strong>Índice Promedio:</strong> ${props.promedio_indice} pts</p>
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0;">
                     <p style="margin: 4px 0; font-size: 0.85rem;">🏠 Hogares Registrados: ${props.total_hogares}</p>
-                    <p style="margin: 4px 0; font-size: 0.85rem;">👶 Carga Infantil Promedio: ${props.promedio_ninos}</p>
-                    <p style="margin: 4px 0; font-size: 0.85rem;">💼 Tasa Informalidad: ${props.tasa_informalidad}%</p>
                 </div>
-            `)
+            `);
         }
-    })
-    return urbano
+    });
 }

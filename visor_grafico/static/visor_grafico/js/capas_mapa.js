@@ -1,12 +1,12 @@
-import { map, layerControl } from "./mapBase.js";
-// Objeto global para almacenar las capas de Leaflet activas por su ID
+import { map } from "./mapBase.js";
+import { ES_ADMINISTRADOR } from './config.js';
+import { mostrarExito } from './utils/ui.js';
+
 const capasActivas = {};
 
-// 1. Obtener la lista de capas creadas desde el backend Django
 async function cargarListaCapas() {
     const container = document.getElementById('lista-capas-container');
     
-    // Verificación defensiva si el contenedor no existe en el DOM
     if (!container) return;
 
     try {
@@ -25,8 +25,20 @@ async function cargarListaCapas() {
 
         container.innerHTML = '';
         data.capas.forEach(capa => {
+            const botonEliminarHTML = (ES_ADMINISTRADOR) ? `
+                <button type="button" 
+                        data-eliminar-id="${capa.id}" 
+                        data-eliminar-nombre="${capa.nombre}"
+                        class="btn-eliminar-capa p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors ml-1" 
+                        title="Eliminar capa">
+                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            ` : '';
+
             const itemHTML = `
-                <div class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition-all">
+                <div id="capa-item-${capa.id}" class="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition-all">
                     <div class="flex items-center gap-2.5 overflow-hidden">
                         <input type="checkbox" 
                             id="capa-chk-${capa.id}" 
@@ -40,16 +52,9 @@ async function cargarListaCapas() {
                             <span class="text-[10px] text-slate-400 font-mono">${capa.formato} • ${capa.num_registros} ent.</span>
                         </div>
                     </div>
-                    <!-- Botón de Borrado -->
-                    <button type="button" 
-                            data-eliminar-id="${capa.id}" 
-                            data-eliminar-nombre="${capa.nombre}"
-                            class="btn-eliminar-capa p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors ml-1" 
-                            title="Eliminar capa">
-                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
+                    
+                    <!-- Se inyecta el botón condicionalmente -->
+                    ${botonEliminarHTML}
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', itemHTML);
@@ -61,16 +66,13 @@ async function cargarListaCapas() {
     }
 }
 
-// 2. Alternar entre renderizar y remover la capa en Leaflet
 async function alternarCapa(capaId, nombreCapa, visible) {
     if (visible) {
         if (!capasActivas[capaId]) {
             try {
-                // Petición a la vista que genera el GeoJSON desde PostGIS
                 const response = await fetch(`/capas/api/geojson/${capaId}/`);
                 const geojsonData = await response.json();
 
-                // Crear capa GeoJSON en Leaflet
                 const layerLeaflet = L.geoJSON(geojsonData, {
                     style: function(feature) {
                         return {
@@ -81,7 +83,6 @@ async function alternarCapa(capaId, nombreCapa, visible) {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        // Crear emergente dinámico con atributos
                         if (feature.properties) {
                             let popupContent = `<div class="p-1 max-h-48 overflow-y-auto text-xs">`;
                             popupContent += `<strong class="text-teal-700">${nombreCapa}</strong><hr class="my-1"/>`;
@@ -94,11 +95,9 @@ async function alternarCapa(capaId, nombreCapa, visible) {
                     }
                 });
 
-                // Guardar referencia y añadir al mapa
                 capasActivas[capaId] = layerLeaflet;
                 capasActivas[capaId].addTo(map);
 
-                // Auto-enfocar el mapa a los límites de la nueva capa
                 if (layerLeaflet.getBounds().isValid()) {
                     map.fitBounds(layerLeaflet.getBounds());
                 }
@@ -112,22 +111,17 @@ async function alternarCapa(capaId, nombreCapa, visible) {
             capasActivas[capaId].addTo(map);
         }
     } else {
-        // Remover del mapa si el usuario desmarca la casilla
         if (capasActivas[capaId]) {
             map.removeLayer(capasActivas[capaId]);
         }
     }
 }
 
-// Exponer la función al scope global de window por compatibilidad con módulos
 window.alternarCapa = alternarCapa;
 
-// 3. Event Listeners e Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar la lista inicial de capas
     cargarListaCapas();
 
-    // Delegación de eventos centralizada para los checkboxes
     const container = document.getElementById('lista-capas-container');
     if (container) {
         container.addEventListener('change', (event) => {
@@ -142,9 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-
-// 2. Función para solicitar la eliminación y limpiar el mapa
 async function eliminarCapa(capaId, nombreCapa) {
     if (!confirm(`¿Estás seguro de que deseas eliminar la capa "${nombreCapa}" y todas sus geometrías asociadas?`)) {
         return;
@@ -153,7 +144,6 @@ async function eliminarCapa(capaId, nombreCapa) {
     try {
         const mapaInstancia = window.map || map;
 
-        // Si la capa está renderizada en el mapa, la removemos primero
         if (capasActivas[capaId]) {
             if (mapaInstancia && typeof mapaInstancia.removeLayer === 'function') {
                 mapaInstancia.removeLayer(capasActivas[capaId]);
@@ -161,7 +151,6 @@ async function eliminarCapa(capaId, nombreCapa) {
             delete capasActivas[capaId];
         }
 
-        // Obtener el Token CSRF de las cookies de Django
         const getCookie = (name) => {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -188,11 +177,12 @@ async function eliminarCapa(capaId, nombreCapa) {
         const result = await response.json();
 
         if (response.ok && result.status === 'ok') {
-            // Remover el elemento directamente del DOM
             const itemDOM = document.getElementById(`capa-item-${capaId}`);
             if (itemDOM) itemDOM.remove();
-
-            // Si no quedan más capas, mostrar el mensaje vacío
+            mostrarExito(
+                '¡Eliminación exitosa!',
+                `La capa "${nombreCapa}" y sus geometrías asociadas fueron eliminadas.`
+            );
             const container = document.getElementById('lista-capas-container');
             if (container && container.children.length === 0) {
                 container.innerHTML = `<p class="text-slate-400 text-center py-3">No hay capas procesadas aún.</p>`;
@@ -209,7 +199,6 @@ async function eliminarCapa(capaId, nombreCapa) {
 
 // 3. Capturar el click sobre el botón de eliminar usando delegación de eventos
 document.addEventListener('DOMContentLoaded', () => {
-    // ... tus eventos existentes ...
 
     const container = document.getElementById('lista-capas-container');
     if (container) {

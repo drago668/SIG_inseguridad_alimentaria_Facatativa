@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a SIG Facatativá</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+
+                <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+
+                    <tr>
+                        <td style="background-color: #0f766e; padding: 24px 32px; text-align: center;">
+                            <h1 style="color: #ffffff; font-size: 20px; font-weight: bold; margin: 0;">SIG Facatativá</h1>
+                            <p style="color: #ccfbf1; font-size: 12px; margin: 4px 0 0 0;">Sistema de Información Geográfica — Cundinamarca</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 32px;">
+                            <h2 style="color: #1e293b; font-size: 18px; margin-top: 0;">Hola, {{ nombre }}:</h2>
+                            <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+                                Se ha creado una cuenta institucional para ti en la plataforma del <strong>Sistema de Información Geográfica de Facatativá</strong>.
+                            </p>
+                            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+                                A continuación, te compartimos tus credenciales de acceso generadas por el administrador:
+                            </p>
+
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 32px;">
+                                <tr>
+                                    <td style="padding: 16px;">
+                                        <p style="margin: 0 0 8px 0; font-size: 13px;">
+                                            <span style="color: #64748b; font-weight: bold; text-transform: uppercase;">Correo Electrónico:</span><br>
+                                            <strong style="color: #0f766e; font-size: 15px;">{{ email }}</strong>
+                                        </p>
+                                        <p style="margin: 0; font-size: 13px;">
+                                            <span style="color: #64748b; font-weight: bold; text-transform: uppercase;">Contraseña Temporal:</span><br>
+                                            <strong style="color: #1e293b; font-size: 15px;">{{ password }}</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Botón de Acción -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="text-align: center;">
+                                <tr>
+                                    <td>
+                                        <a href="{{ login_url }}" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; font-size: 14px; text-decoration: none; padding: 12px 24px; border-radius: 8px;">
+                                            Ingresar al Sistema
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Nota de seguridad -->
+                            <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin-top: 32px; text-align: center;">
+                                <em>Por motivos de seguridad, te recomendamos cambiar esta contraseña una vez ingreses a la plataforma desde tu perfil de usuario.</em>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+                <p style="color: #94a3b8; font-size: 12px; text-align: center; margin-top: 16px;">
+                    © 2026 SIG Facatativá. Todos los derechos reservados.<br>
+                    Este es un mensaje automático, por favor no respondas a este correo.
+                </p>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

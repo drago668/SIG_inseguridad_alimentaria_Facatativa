@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 
+
 class Departamentos(models.Model):
     ogc_fid = models.AutoField(primary_key=True)
     dpto_ccdgo = models.CharField(max_length=5, unique=True, verbose_name="Código DANE Depto")  # Código DIVIPOLA (ej. '25')
@@ -110,3 +111,4 @@ class ZonaUrbana(models.Model):
     class Meta:
         managed = False
         db_table = 'zona_urbana'
+
