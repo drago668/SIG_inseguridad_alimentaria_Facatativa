@@ -9,10 +9,11 @@ from django.contrib.gis.gdal import SpatialReference
 from .models import Vias, Municipios, Veredas, ZonaUrbana
 from indicador_territorial.models import Corte
 from app_capas.forms import CapaEspacialForm
-from django.views.decorators.csrf import csrf_exempt
 from .apps import VisorGraficoConfig
+from django.views.decorators.http import require_GET
 
 
+@require_GET 
 def mapa_facatativa_page(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'
@@ -22,7 +23,7 @@ def mapa_facatativa_page(request):
     administrador = request.user.is_authenticated and request.user.rol in ['ADMIN']
     form = CapaEspacialForm()
     es_autenticado =request.user.is_authenticated
-    listado_municipios = Municipios.objects.order_by('mpio_cnmbr')
+    listado_municipios = Municipios.objects.filter(dpto_ccdgo='25').order_by('mpio_cnmbr')
     listado_veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio='25269').values('codigo_ver','nombre_ver')
 
     contexto = {
@@ -38,12 +39,14 @@ def mapa_facatativa_page(request):
     return render(request, 'visor_grafico/mapa_facatativa.html', contexto)
 
 
+@require_GET 
 def obtener_veredas_por_municipio(request):
     mpio = request.GET.get("mpio", None)
     veredas = Veredas.objects.order_by('nombre_ver').filter(dptompio= mpio).values('codigo_ver','nombre_ver')
     return JsonResponse(list(veredas), safe=False)
 
 
+@require_GET 
 def facatativa_geojson_api(request):
     """
     Vista API: Retorna el polígono de Facatativá en formato GeoJSON WGS84 (EPSG:4326).
@@ -80,6 +83,7 @@ def facatativa_geojson_api(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@require_GET 
 def vias_facatativa_geojson(request):
     try:
         mpio = request.GET.get('mpio', None)
@@ -112,6 +116,7 @@ def vias_facatativa_geojson(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@require_GET 
 def veredas_facatativa_geojson(request):
     try:
 
@@ -151,7 +156,7 @@ def veredas_facatativa_geojson(request):
         )
         return HttpResponse(geojson_data, content_type='application/json')
     except Exception as e:
-        return JsonResponse({'error':str(e)}, statu=500)
+        return JsonResponse({'error':str(e)}, status=500)
 
 # ==============================================================================
 # CAPAS ESPACIALES BASE (RURAL Y URBANA)
@@ -182,6 +187,7 @@ def _construir_geojson(queryset, tipo_zona_nombre, prefijo_id):
     return {"type": "FeatureCollection", "features": features}
 
 
+@require_GET 
 def geojson_inseguridad_rural(request):
     try:
         mpio = request.GET.get('mpio', '25269')
@@ -191,6 +197,7 @@ def geojson_inseguridad_rural(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@require_GET 
 def geojson_inseguridad_urbana(request):
     try:
         mpio = request.GET.get('mpio', '25269')
@@ -200,7 +207,7 @@ def geojson_inseguridad_urbana(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
+@require_GET 
 def obtener_datos_mapa_2025(request):
     try:
         # 1. Si ya se calculó previamente, devolver inmediatamente desde la memoria (Caché en 1ms)

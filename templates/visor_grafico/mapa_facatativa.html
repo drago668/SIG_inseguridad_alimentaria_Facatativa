@@ -14,9 +14,6 @@
     crossorigin="anonymous" />
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- <link rel="stylesheet" href="{% static 'visor_grafico/css/output.css' %}">-->
-
-
 
     <!--scripts js#############################################################################################################################################-->
     <!--leaflet.js-->
@@ -475,7 +472,8 @@
             "urlDatosMapa2025": "{% url 'datos_mapa_2025' %}",
             "urlDimensionesMunicipales": "{% url 'dimensiones_municipales' %}",
             "autorReporte": "{{ nombre_user|default:'Ciudadano'|escapejs }}",
-            "esAdministrador": {% if es_administrador %}true{% else %}false{% endif %}
+            "esAdministrador": {% if es_administrador %}true{% else %}false{% endif %},
+            "urlPrevalenciaZonales": "{% url 'prevalencia_zonales_bd' %}"
         }
     </script>
 

@@ -6,7 +6,6 @@ import statsmodels.api as sm
 from django.http import JsonResponse
 from gestion_usuarios.decorators import rol_requerido
 from gestion_usuarios.models import Usuario
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib import messages
 from indicador_territorial.services.cargador_ecv import cargar_desde_csv
@@ -14,9 +13,11 @@ from django.db.models import Sum, F, FloatField, Value, Case, When
 from django.db.models.functions import Cast
 from indicador_territorial.models import HogarECV
 from django.db.models.functions import Coalesce
+from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.csrf import csrf_protect
 
 
-
+@require_GET 
 def dashboard_view(request):
     es_entidad_o_admin = request.user.is_authenticated and request.user.rol in [
         'ADMIN', 'ENTIDAD'
@@ -33,8 +34,10 @@ def dashboard_view(request):
     return render(request, 'indicador_territorial/dashboard.html', context)
 
 
+
 # Variable global o atributo de clase para caché en memoria
 CACHE_DIMENSIONES_2025 = None
+@require_GET 
 def obtener_dimensiones_municipales(request):
     """
     Endpoint API: Retorna los aportes SHAP por dimensión y prevalencia base 
@@ -76,7 +79,7 @@ def obtener_dimensiones_municipales(request):
 
 # ─── Dimensiones Zonales (Dashboard DSS) ──────────────────────────────────────
 CACHE_DIMENSIONES_ZONALES_2025 = None
-
+@require_GET 
 def obtener_dimensiones_zonales(request):
     """
     Sirve los datos del CSV dimensiones_zonales_2025.csv (nivel Zona Urbana/Rural).
@@ -140,8 +143,8 @@ def obtener_dimensiones_zonales(request):
 
 
 MAX_MB_CARGA = 300  
-
-
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 @rol_requerido(['ADMIN'])
 def cargar_ecv_view(request):
 
@@ -186,7 +189,7 @@ def cargar_ecv_view(request):
 
     return render(request, 'indicador_territorial/cargar_ecv.html', contexto)
 
-
+@require_GET 
 def obtener_prevalencia_zonales_bd(request):
     """
     Prevalencia real y del modelo por municipio y zona, calculada EN VIVO

@@ -1,4 +1,5 @@
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods, require_GET
+from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -8,6 +9,9 @@ from .models import CapaEspacial, ElementoVectorial
 from .forms import CapaEspacialForm
 from .services import procesar_capa_vectorial
 
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 def cargar_capa(request):
     mostrar_modal_exito = False
     if request.method == 'POST':
@@ -32,7 +36,7 @@ def cargar_capa(request):
     }
     return render(request, 'capas/cargar.html', context)
 
-
+@require_GET
 def listar_capas_api(request):
     """
     Retorna la lista de capas procesadas exitosamente para consumirlas desde el JS del mapa.
@@ -43,6 +47,7 @@ def listar_capas_api(request):
     return JsonResponse({'capas': list(capas)})
 
 
+@require_GET
 def obtener_geojson_capa(request, capa_id):
     """
     Endpoint que retorna los elementos vectoriales guardados en PostGIS 

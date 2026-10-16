@@ -1,3 +1,5 @@
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib import messages
@@ -7,6 +9,8 @@ from .models import Usuario
 from gestion_usuarios.emails import correo_bienvenida
 from django.urls import reverse
 
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 def login_view(request):
     """Maneja el inicio de sesión mediante correo y contraseña."""
     if request.user.is_authenticated:
@@ -26,6 +30,9 @@ def login_view(request):
     
     return render(request, 'gestion_usuarios/login.html', {'form': form})
 
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 def logout_view(request):
     """Cierra la sesión activa."""
     logout(request)
@@ -33,6 +40,8 @@ def logout_view(request):
     return redirect('login')
 
 
+@csrf_protect
+@require_http_methods(["GET", "POST"])
 @rol_requerido(roles_permitidos=[Usuario.Rol.ADMINISTRADOR])
 def registrar_usuario_view(request):
     """Exclusivo para Administradores: permite crear cuentas para otros Admins o Entidades."""
