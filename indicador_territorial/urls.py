@@ -5,7 +5,8 @@ from .views import (
     )
 
 urlpatterns = [
-    path('dashboard/', dashboard_view, name='dashboard'),
+    path('', dashboard_view, name='dashboard'), 
+    path('dashboard/', dashboard_view, name='dashboard_explicito'),
     path('api/dimensiones-municipales/', obtener_dimensiones_municipales, name='dimensiones_municipales'),
     path('api/dimensiones-zonales/', obtener_dimensiones_zonales, name='dimensiones_zonales'),
     path('api/prevalencia-zonales-bd/', obtener_prevalencia_zonales_bd, name='prevalencia_zonales_bd'),
