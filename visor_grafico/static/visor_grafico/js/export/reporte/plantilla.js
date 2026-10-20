@@ -107,7 +107,7 @@ export function construirDocumento({ datos, stats, mapaDataUrl, autor }) {
 
             <!-- Mapa -->
             <div style="border-radius:10px; overflow:hidden; margin-bottom:6px; background:#f1f5f9;">
-                <img src="${mapaDataUrl}" style="width:100%; height:180px; object-fit:cover; display:block;" />
+                <img src="${mapaDataUrl}" style="width:50%; height:300px; object-fit:cover; display:block;" />
                 <div style="background:#f8fafc; color:#64748b; font-size:8px; text-align:right; padding:5px 10px;">
                     Mapa Base: OpenStreetMap / Positron — EPSG:4326 (WGS84)
                 </div>

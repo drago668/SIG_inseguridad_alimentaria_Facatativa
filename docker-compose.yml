@@ -12,12 +12,16 @@ services:
     volumes:
       - sig-postgres-data:/var/lib/postgresql/data
   web:
-    build: .  # Busca el Dockerfile en la carpeta actual
-    command: python manage.py runserver 0.0.0.0:8000  # Comando para desarrollo local
+    build: .  
+    container_name: mvp-web-1
+    command: gunicorn sig_inseguridad.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120  
+    restart: always
     volumes:
-      - .:/app  # Sincroniza tu código en tiempo real
+      - .:/app  
+      - static_vol:/app/staticfiles
+      - media_vol:/app/media
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@sig-postgres:5432/${POSTGRES_DB}
     depends_on:
@@ -26,3 +30,5 @@ services:
 volumes:
   sig-postgres-data:
     external: true
+  static_vol:
+  media_vol:

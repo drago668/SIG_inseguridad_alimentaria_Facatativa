@@ -1,0 +1,37 @@
+# Secretos y configuracion local
+.env
+.env.*
+!.env.example
+
+# Base de datos y volcados
+*.sql
+db.sqlite3
+*.sqlite3
+
+# Datos pesados que no van en la imagen
+*.csv
+datos_dashboard_sisben.csv
+capas_espaciales/
+
+# Artefactos de ML: se montan como volumen en produccion
+visor_grafico/ml_assets/*.csv
+visor_grafico/ml_assets/_respaldo_sep24/
+
+# Historial y configuracion local.git
+.history
+.scannerwork
+.vscode
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Entornos y archivos de trabajo
+venv/
+.venv/
+env/
+*.log
+*.tmp
+Dockerfile
+docker-compose.yml
+requirements copy.txt
