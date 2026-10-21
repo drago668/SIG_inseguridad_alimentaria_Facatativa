@@ -5,6 +5,22 @@ let mapaDimensiones = new Map();
 let capaCoropletas = null;
 let municipioSeleccionadoActual = null;
 
+
+export function toggleCapaCoropletas(checked) {
+    if (capaCoropletas) {
+        if (checked) {
+            capaCoropletas.addTo(map);
+        } else {
+            map.removeLayer(capaCoropletas);
+        }
+    }
+}
+
+export function isCapaCoropletasVisible() {
+    return capaCoropletas && map.hasLayer(capaCoropletas);
+}
+
+
 export async function cargarDimensionesMunicipales() {
     try {
         const res = await fetch(URLS.dimensionesMunicipales);
@@ -175,3 +191,5 @@ export function obtenerMunicipioNombre(divipola) {
     const r = mapaDimensiones.get(String(divipola).padStart(5, '0'));
     return r ? r.nombre_municipio : null;
 }
+
+export { map } from '../mapBase.js'; 

@@ -5,13 +5,12 @@ import './core/medicion.js';
 import './export/imagen.js';
 import './exportar_pdf.js';
 import './export/datos.js';
-import { crearCapaPoliticasAlimentaria } from './politicas.js';  // Cambiado
+import { crearCapaPoliticasAlimentaria } from './politicas.js';  
+import { toggleCapaCoropletas, isCapaCoropletasVisible } from './capas/overlay.js'; 
 
 let capaPoliticasAlimentaria = null;
 
-// Función para obtener map de forma segura
 function getMap() {
-    // mapBase.js debería haber asignado map a window.map
     return window.map || (typeof map !== 'undefined' ? map : null);
 }
 
@@ -19,7 +18,6 @@ async function inicializarPoliticas() {
     try {
         const capa = await crearCapaPoliticasAlimentaria();
         if (capa) {
-            // GUARDAR REFERENCIA GLOBAL (no añadir al mapa aún)
             window.capaPoliticasAlimentaria = capa;
         }
     } catch (e) {
@@ -47,12 +45,11 @@ export function toggleCapaPoliticas(checked) {
     }
 }
 
-// Inicializar cuando el DOM esté listo Y map exista
 function waitForMap() {
     return new Promise((resolve) => {
         const check = () => {
             const m = getMap();
-            if (m && m._container) { // Verificar que Leaflet ya inicializó
+            if (m && m._container) { 
                 resolve(m);
             } else {
                 setTimeout(check, 50);
@@ -63,16 +60,42 @@ function waitForMap() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Esperar a que mapBase.js haya inicializado el mapa
     await waitForMap();
-    
     await inicializarPoliticas();
     
-    // Event listener para checkbox
     const chk = document.getElementById('chk-capa-politicas-visor');
     if (chk) {
         chk.addEventListener('change', (e) => {
             toggleCapaPoliticas(e.target.checked);
+        });
+    }
+});
+
+function toggleCapaCoropletasHandler(checked) {
+    import('./capas/overlay.js').then(({ toggleCapaCoropletas }) => {
+        toggleCapaCoropletas(checked);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await waitForMap();
+    
+    await inicializarPoliticas();
+    
+    const chkPoliticas = document.getElementById('chk-capa-politicas-visor');
+    if (chkPoliticas) {
+        chkPoliticas.addEventListener('change', (e) => {
+            toggleCapaPoliticas(e.target.checked);
+        });
+    }
+    
+    const chkCoropletas = document.getElementById('chk-capa-fies');
+    if (chkCoropletas) {
+        chkCoropletas.checked = true;
+        chkCoropletas.addEventListener('change', (e) => {
+            import('./capas/overlay.js').then(({ toggleCapaCoropletas }) => {
+                toggleCapaCoropletas(e.target.checked);
+            });
         });
     }
 });
