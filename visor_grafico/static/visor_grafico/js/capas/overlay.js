@@ -77,19 +77,19 @@ function actualizarPanelDetalle(nombre, divipola, valor) {
 
     const badge = document.getElementById('badge-nivel-riesgo');
     if (valor === null || valor === undefined) {
-        badge.textContent = "Sin datos de encuesta";
+        badge.textContent = "Sin datos SHAP";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600";
     } else if (valor > 40.0) {
-        badge.textContent = "Crítico / Severo";
+        badge.textContent = "Crítico (Aporte SHAP > 40)";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
     } else if (valor > 25.0) {
-        badge.textContent = "Moderado-Alto";
+        badge.textContent = "Moderado-Alto (25-40)";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700";
     } else if (valor > 15.0) {
-        badge.textContent = "Moderado-Bajo";
+        badge.textContent = "Moderado-Bajo (15-25)";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700";
     } else {
-        badge.textContent = "Bajo";
+        badge.textContent = "Bajo (≤ 15)";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
     }
 }

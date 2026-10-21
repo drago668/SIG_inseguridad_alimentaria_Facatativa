@@ -71,20 +71,19 @@ function actualizarSimulacionDSS() {
     const valSalud = intSalud ? -Math.abs(datosZona.shap_salud || 0) : 0;
 
     if (chartBarrasImpacto) {
-    const datosImpacto = {
-        valDesempleo,
-        valViviendaBarra,
-        valDesastre,
-        valNevera,
-        valSubsidio,
-        valAcueducto,
-        valEmpleo,
-        valSalud
-    };
-    
-    // Usar la función del módulo graficos (importar arriba)
-    actualizarGraficoImpacto(datosImpacto);
-}
+        const datosImpacto = {
+            valDesempleo,
+            valViviendaBarra,
+            valDesastre,
+            valNevera,
+            valSubsidio,
+            valAcueducto,
+            valEmpleo,
+            valSalud
+        };
+
+        actualizarGraficoImpacto(datosImpacto);
+    }
 
     const pctJefatura = datosZona.pct_jefatura_femenina || 0;
     const pctHacinado = datosZona.pct_hogar_hacinado || 0;
