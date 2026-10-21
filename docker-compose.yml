@@ -17,9 +17,9 @@ services:
     command: gunicorn sig_inseguridad.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120  
     restart: always
     volumes:
-      - .:/app  
-      - static_vol:/app/staticfiles
-      - media_vol:/app/media
+      - .:/app
+      - sig_inseguridad_alimentaria_facatativa_static_vol:/app/staticfiles
+      - sig_inseguridad_alimentaria_facatativa_media_vol:/app/media
     ports:
       - "127.0.0.1:8000:8000"
     environment:
@@ -30,5 +30,7 @@ services:
 volumes:
   sig-postgres-data:
     external: true
-  static_vol:
-  media_vol:
+  sig_inseguridad_alimentaria_facatativa_static_vol:
+    external: true
+  sig_inseguridad_alimentaria_facatativa_media_vol:
+    external: true
