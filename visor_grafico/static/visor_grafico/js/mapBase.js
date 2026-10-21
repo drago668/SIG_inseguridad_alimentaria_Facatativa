@@ -1,6 +1,6 @@
 
 
-export const map = L.map('map').setView([4.813, -74.354], 13);
+const map = L.map('map').setView([4.813, -74.354], 13);
 L.control.scale('metric').addTo(map);
 
 const openStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -194,3 +194,8 @@ function actualizarUIHistorial() {
         };
     });
 }
+
+export { map };
+
+window.map = map;
+
