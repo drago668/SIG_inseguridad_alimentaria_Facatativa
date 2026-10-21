@@ -35,7 +35,11 @@ function inicializarRadares() {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (ctx) => ` Aporte SHAP: ${ctx.raw.toFixed(2)}% al riesgo`
+                    label: (ctx) => {
+                        const raw = ctx.raw;
+                        const val = (typeof raw === 'number' && isFinite(raw)) ? raw : 0;
+                        return ` Aporte SHAP: ${val.toFixed(2)}% al riesgo`;
+                    }
                 }
             }
         }
@@ -134,7 +138,10 @@ function inicializarGraficoImpacto() {
                     tooltip: {
                         callbacks: {
                             label: (ctx) => {
-                                const val = ctx.raw;
+                                const raw = ctx.raw;
+                                // Asegurar que val sea un número válido
+                                const val = (typeof raw === 'number' && isFinite(raw)) ? raw : 0;
+                                
                                 return val < 0
                                     ? ` Mitigación de Política: ${val.toFixed(2)} pts de hambre reducidos`
                                     : ` Riesgo Adicional: +${val.toFixed(2)} pts al FIES`;
@@ -176,12 +183,22 @@ function inicializarValidacion() {
 }
 
 export function actualizarRadares(regUrb, regRur) {
-    if (chartRadarUrbano && regUrb) {
-        chartRadarUrbano.data.datasets[0].data = aportes(regUrb);
+    if (chartRadarUrbano) {
+        if (regUrb) {
+            chartRadarUrbano.data.datasets[0].data = aportes(regUrb);
+        } else {
+            chartRadarUrbano.data.datasets[0].data = [0, 0, 0, 0, 0, 0]; // LIMPIAR
+        }
         chartRadarUrbano.update();
     }
-    if (chartRadarRural && regRur) {
-        chartRadarRural.data.datasets[0].data = aportes(regRur);
+    
+    // Rural
+    if (chartRadarRural) {
+        if (regRur) {
+            chartRadarRural.data.datasets[0].data = aportes(regRur);
+        } else {
+            chartRadarRural.data.datasets[0].data = [0, 0, 0, 0, 0, 0]; // LIMPIAR
+        }
         chartRadarRural.update();
     }
 }
@@ -196,6 +213,30 @@ function aportes(reg) {
         reg.aporte_Desastres || 0,
     ];
 }
+
+export function actualizarGraficoImpacto(datos) {
+    if (!chartBarrasImpacto) return;
+    
+    // datos = { valDesempleo, valViviendaBarra, valDesastre, valNevera, 
+    //           valSubsidio, valAcueducto, valEmpleo, valSalud }
+    const data = [
+        datos.valDesempleo ?? 0,
+        datos.valViviendaBarra ?? 0,
+        datos.valDesastre ?? 0,
+        datos.valNevera ?? 0,
+        datos.valSubsidio ?? 0,
+        datos.valAcueducto ?? 0,
+        datos.valEmpleo ?? 0,
+        datos.valSalud ?? 0,
+    ];
+    
+    chartBarrasImpacto.data.datasets[0].data = data;
+    chartBarrasImpacto.data.datasets[0].backgroundColor = data.map(v => 
+        v < 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)'
+    );
+    chartBarrasImpacto.update();
+}
+
 
 export function actualizarValidacion() {
     if (!chartValidacion) return;

@@ -9,7 +9,7 @@ import {
     fijarZonaSimulacion,
     fijarNombreMunicipio,
 } from './datos.js';
-import { inicializarGraficos, obtenerGraficoImpacto } from './graficos.js';
+import { inicializarGraficos, obtenerGraficoImpacto, actualizarGraficoImpacto   } from './graficos.js';
 
 // ---------------------------------------------------------
 // SIMULACION DSS
@@ -71,22 +71,20 @@ function actualizarSimulacionDSS() {
     const valSalud = intSalud ? -Math.abs(datosZona.shap_salud || 0) : 0;
 
     if (chartBarrasImpacto) {
-        chartBarrasImpacto.data.datasets[0].data = [
-            valDesempleo.toFixed(2),
-            valViviendaBarra.toFixed(2),
-            valDesastre.toFixed(2),
-            valNevera.toFixed(2),
-            valSubsidio.toFixed(2),
-            valAcueducto.toFixed(2),
-            valEmpleo.toFixed(2),
-            valSalud.toFixed(2)
-        ];
-        chartBarrasImpacto.data.datasets[0].backgroundColor =
-            chartBarrasImpacto.data.datasets[0].data.map(v =>
-                v < 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)'
-            );
-        chartBarrasImpacto.update();
-    }
+    const datosImpacto = {
+        valDesempleo,
+        valViviendaBarra,
+        valDesastre,
+        valNevera,
+        valSubsidio,
+        valAcueducto,
+        valEmpleo,
+        valSalud
+    };
+    
+    // Usar la función del módulo graficos (importar arriba)
+    actualizarGraficoImpacto(datosImpacto);
+}
 
     const pctJefatura = datosZona.pct_jefatura_femenina || 0;
     const pctHacinado = datosZona.pct_hogar_hacinado || 0;
