@@ -21,7 +21,6 @@ async function inicializarPoliticas() {
         if (capa) {
             // GUARDAR REFERENCIA GLOBAL (no añadir al mapa aún)
             window.capaPoliticasAlimentaria = capa;
-            console.log('[Visor] Capa de políticas cargada, lista para activar');
         }
     } catch (e) {
         console.error('[Visor] Error inicializando políticas:', e);
@@ -43,10 +42,8 @@ export function toggleCapaPoliticas(checked) {
     
     if (checked) {
         capa.addTo(m);
-        console.log('[Visor] Capa políticas ACTIVADA');
     } else {
         m.removeLayer(capa);
-        console.log('[Visor] Capa políticas DESACTIVADA');
     }
 }
 

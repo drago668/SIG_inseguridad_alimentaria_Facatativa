@@ -4,8 +4,6 @@ export async function crearCapaPoliticasAlimentaria() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         
-        console.log('[Visor] Stats políticas:', data.stats_por_valor);
-        
         if (data.features.length === 0) {
             console.warn('[Visor] No hay políticas de seguridad alimentaria');
             return null;

@@ -11,7 +11,6 @@ export async function cargarDimensionesMunicipales() {
         if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
         const json = await res.json();
         if (json.status === 'success') {
-            console.log(json.data);
             return json.data;
         }
         throw new Error(json.message || "Error al cargar dimensiones");

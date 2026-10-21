@@ -102,7 +102,7 @@ export async function fusionarConBD(registros, corte = 2025) {
                 pct_hogar_hacinado: bd.pct_hogar_hacinado,
             };
         });
-        console.log(`Fusión BD: ${fusionados}/${registros.length} registros actualizados`);
+        //console.log(`Fusión BD: ${fusionados}/${registros.length} registros actualizados`);
         return salida;
     } catch (e) {
         console.warn('BD no disponible, se usan solo los datos del CSV:', e);
