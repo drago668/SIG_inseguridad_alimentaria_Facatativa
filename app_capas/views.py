@@ -84,3 +84,100 @@ def eliminar_capa_api(request, capa_id):
         return JsonResponse({'status': 'ok', 'message': 'Capa eliminada correctamente'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+@require_GET
+def geojson_politicas_seguridad_alimentaria(request):
+    """
+    Endpoint provisional: GeoJSON de la capa 'Implementación de políticas de inseguridad alimentaria' (ID 30),
+    filtrado/coloreado por el campo f22 (política de seguridad alimentaria).
+    """
+    # Capa fija ID 30: "Implementación de políticas de inseguridad alimentaria"
+    capa_id = request.GET.get('capa_id', '30')
+    capa = get_object_or_404(CapaEspacial, id=capa_id, procesado_exitoso=True)
+    
+    # Campo en atributos JSON: f22 = política de seguridad alimentaria
+    campo_f22 = 'f22'
+    
+    # Filtro opcional: solo los que NO sean "No hay Política Pública"
+    solo_con_politica = request.GET.get('solo_con_politica', 'true').lower() == 'true'
+    
+    queryset = ElementoVectorial.objects.filter(capa=capa)
+    
+    if solo_con_politica:
+        # Excluir los que dicen "No hay Política Pública" (case-insensitive)
+        queryset = queryset.exclude(
+            **{f"atributos__{campo_f22}__icontains": "no hay política pública"}
+        )
+    
+    # Límite opcional
+    limit = request.GET.get('limit')
+    if limit:
+        try:
+            queryset = queryset[:int(limit)]
+        except ValueError:
+            pass
+    
+    # Mapeo de colores por valor de f22
+    COLOR_MAP = {
+        'en formulación': '#f59e0b',      
+        'formulación': '#f59e0b',
+        'aprobada': '#16a34a',            
+        'aprobado': '#16a34a',
+        'ejecutada': '#16a34a',
+        'ejecutando': '#3b82f6',          
+        'en ejecución': '#3b82f6',
+        'en ejecucion': '#3b82f6',
+        'pendiente': '#6366f1',           
+        'planificada': '#6366f1',
+        'no hay política pública': '#9ca3af',  
+        'no hay politica pública': '#9ca3af',
+        'no hay política': '#9ca3af',
+        'sin política': '#9ca3af',
+        'sin politica': '#9ca3af',
+    }
+    
+    DEFAULT_COLOR = '#6b7280'  
+    
+    features = []
+    stats = {}
+    
+    for elem in queryset:
+        attrs = elem.atributos
+        valor_f22 = attrs.get(campo_f22, '')
+        valor_lower = str(valor_f22).strip().lower()
+        
+        # Color basado en valor
+        color = DEFAULT_COLOR
+        for key, col in COLOR_MAP.items():
+            if key in valor_lower:
+                color = col
+                break
+        
+        # Contar para stats
+        stats[valor_f22] = stats.get(valor_f22, 0) + 1
+        
+        # Propiedades para el popup
+        props = {
+            **attrs,
+            '_color_sugerido': color,
+            '_valor_f22': valor_f22,
+            '_capa_origen': capa.nombre,
+        }
+        
+        features.append({
+            "type": "Feature",
+            "geometry": json.loads(elem.geometria.geojson),
+            "properties": props
+        })
+    
+    geojson_data = {
+        "type": "FeatureCollection",
+        "name": f"Políticas Seguridad Alimentaria - {capa.nombre}",
+        "capa_id": capa.id,
+        "capa_nombre": capa.nombre,
+        "campo_filtrado": campo_f22,
+        "total_features": len(features),
+        "stats_por_valor": stats,
+        "features": features
+    }
+    
+    return JsonResponse(geojson_data)
