@@ -3,11 +3,6 @@
 const map = L.map('map').setView([4.813, -74.354], 13);
 L.control.scale('metric').addTo(map);
 
-const openStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-attribution: '&copy; OpenStreetMap contributors | DANE Colombia',
-crossOrigin:'anonymous',
-maxZoom: 19,
-});
 
 const cartoPositron = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png?key=cb1_2tjs_1_2e337f3774d7ddf24dac5693', {
 attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>',
@@ -36,7 +31,6 @@ cartoPositron.addTo(map);
 
 const baseMaps = {
 "CartoDB Positron": cartoPositron,
-"OpenStreetMap":openStreetMap,
 "CartoDB Dark Matter": cartoDark,
 "CartoDB Voyager": cartoVoyager,
 };
