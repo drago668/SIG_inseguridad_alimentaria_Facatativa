@@ -72,7 +72,7 @@ function actualizarPanelDetalle(nombre, divipola, valor) {
     document.getElementById('det-municipio-nombre').textContent = nombre;
     document.getElementById('det-municipio-divipola').textContent = `DIVIPOLA: ${divipola}`;
     
-    const textoValor = (valor !== null && valor !== undefined) ? `${valor.toFixed(1)}%` : 'Sin datos';
+    const textoValor = (valor !== null && valor !== undefined) ? `${valor.toFixed(1)} pts SHAP`  : 'Sin datos';
     document.getElementById('det-prevalencia-valor').textContent = textoValor;
 
     const badge = document.getElementById('badge-nivel-riesgo');
@@ -144,7 +144,7 @@ Promise.all([
             // Tooltip dinámico
             layer.bindTooltip(() => {
                 const valor = calcularValorOverlay(divipola);
-                const txt = valor !== null ? `${valor.toFixed(1)}%` : 'Sin datos';
+                const txt = valor !== null ? `${valor.toFixed(1)}pts SHAP`  : 'Sin datos';
                 return `<strong>${nombre}</strong><br>Aporte acumulado: ${txt}`;
             });
         }
