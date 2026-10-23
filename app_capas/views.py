@@ -118,7 +118,7 @@ def geojson_politicas_seguridad_alimentaria(request):
     
     # Mapeo de colores por valor de f22
     COLOR_MAP = {
-        'en formulación': '#f59e0b',      
+        'en formulación': '#F7996E',      
         'formulación': '#f59e0b',
         'aprobada': '#16a34a',            
         'aprobado': '#16a34a',
@@ -135,7 +135,7 @@ def geojson_politicas_seguridad_alimentaria(request):
         'sin politica': '#9ca3af',
     }
     
-    DEFAULT_COLOR = '#6b7280'  
+    DEFAULT_COLOR = '#6D98BA'  
     
     features = []
     stats = {}
