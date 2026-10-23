@@ -24,6 +24,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = 'media/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+WHITENOISE_ROOT = BASE_DIR / 'static_root'
 
 STORAGES = {
     'default': {
