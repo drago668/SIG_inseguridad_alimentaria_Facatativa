@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import include, path
 from gestion_usuarios.views import login_view, logout_view
 from django.contrib.auth import views as auth_views
+from visor_grafico.views import mapa_facatativa_page
 
 urlpatterns = [
+    path('', mapa_facatativa_page,name='inicio'),
     path("visor_grafico/", include("visor_grafico.urls")),
     path('admin/', admin.site.urls),
     path('indicador_territorial/', include('indicador_territorial.urls')),
