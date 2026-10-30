@@ -113,6 +113,10 @@ export async function exportarMapaPDF() {
 
         if (altoReal <= altoPagina) {
             pdf.addImage(reporteDataUrl, 'PNG', 0, 0, anchoPagina, altoReal);
+        } else if (altoReal <= altoPagina * 1.4) {
+            const escalaMapa = altoPagina / altoReal;
+            const anchoMapa = anchoPagina * escalaMapa;
+            pdf.addImage(reporteDataUrl, 'PNG', (anchoPagina - anchoMapa) / 2, 0, anchoMapa, altoPagina);
         } else {
             let y = 0;
             pdf.addImage(reporteDataUrl, 'PNG', 0, 0, anchoPagina, altoReal);
