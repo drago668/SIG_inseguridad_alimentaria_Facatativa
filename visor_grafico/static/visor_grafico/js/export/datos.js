@@ -1,5 +1,6 @@
 import { URLS } from '../config.js';
 import { obtenerRegistro } from '../capas/overlay.js';
+import { DIMENSIONES } from './reporte/dimensiones.js';
 
 function obtenerNombreDesdeSeleccion(divipola) {
     const slct = document.getElementById('municipios-slct');
@@ -45,10 +46,17 @@ export async function obtenerDatosReporte(divipola) {
 
     const prevalencia = totales.hogares > 0 ? totales.sumaPesada / totales.hogares : null;
 
-    const aportes = CAMPOS_DIMENSION
-        .map(({ campo, etiqueta }) => ({ etiqueta, valor: registro[campo] ?? 0 }))
-        .filter(a => a.valor > 0)
-        .sort((a, b) => b.valor - a.valor);
+    const dimensiones = CAMPOS_DIMENSION
+        .map(({ campo, etiqueta }) => ({
+            campo,
+            etiqueta,
+            valor: registro[campo] ?? 0,
+            ficha: DIMENSIONES[campo] || null,
+        }))
+        .sort((a, b) => b.valor - a.valor)
+        .map((d, i) => ({ ...d, puesto: i + 1 }));
+
+    const aportes = dimensiones.filter(a => a.valor > 0);
 
     const sumaAportes = aportes.reduce((t, a) => t + a.valor, 0);
 
@@ -58,6 +66,7 @@ export async function obtenerDatosReporte(divipola) {
         prevalencia,
         totalHogares: Math.round(totales.hogares),
         aportes,
+        dimensiones,
         sumaAportes,
         pctJefatura: totales.hogares > 0 ? totales.jefatura / totales.hogares : null,
         pctHacinado: totales.hogares > 0 ? totales.hacinado / totales.hogares : null,

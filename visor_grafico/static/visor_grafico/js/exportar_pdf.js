@@ -2,7 +2,8 @@ import { map } from "./mapBase.js";
 import { toggleLoading } from './utils/dom.js';
 import { AUTOR_REPORTE } from './config.js';
 import { obtenerDatosReporte } from './export/datos.js';
-import { construirDocumento } from './export/reporte/plantilla.js';
+import { construirDocumento, construirAnexo } from './export/reporte/plantilla.js';
+import { FUENTE_ENCV } from './export/reporte/dimensiones.js';
 
 function obtenerEstadisticasCapa() {
     const veredasNombres = [];
@@ -124,6 +125,37 @@ export async function exportarMapaPDF() {
         }
         
         console.log('ALTO REAL px:', img.height, '| ANCHO px:', img.width,'| ALTO en mm:', Math.round(altoReal), '| PAGINA mm:', Math.round(altoPagina));
+
+        if (datos) {
+            const anexoContenedor = document.createElement('div');
+            anexoContenedor.style.cssText =
+                'position:absolute; top:0; left:-9999px; width:794px; background:#ffffff;';
+            anexoContenedor.innerHTML = construirAnexo({ datos, autor: AUTOR_REPORTE });
+            document.body.appendChild(anexoContenedor);
+
+            const anexoDataUrl = await html2canvas(anexoContenedor, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false
+            }).then(c => c.toDataURL('image/png'));
+
+            const imgAnexo = new Image();
+            imgAnexo.src = anexoDataUrl;
+            await imgAnexo.decode();
+
+            pdf.addPage();
+
+            const escala = Math.min(anchoPagina / imgAnexo.width, altoPagina / imgAnexo.height);
+            const anchoAnexo = imgAnexo.width * escala;
+            const altoAnexo = imgAnexo.height * escala;
+            const xAnexo = (anchoPagina - anchoAnexo) / 2;
+
+            pdf.addImage(anexoDataUrl, 'PNG', xAnexo, 0, anchoAnexo, altoAnexo);
+            pdf.link(xAnexo + 5, altoAnexo - 22, anchoAnexo - 10, 18, { url: FUENTE_ENCV.url });
+
+            document.body.removeChild(anexoContenedor);
+        }
+
         pdf.save(`Reporte_${datos ? datos.divipola : 'Cundinamarca'}_${Date.now()}.pdf`);
 
         document.body.removeChild(reporteContenedor);

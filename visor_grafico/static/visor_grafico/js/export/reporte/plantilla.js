@@ -1,3 +1,5 @@
+import { FUENTE_ENCV } from './dimensiones.js';
+
 export function construirDocumento({ datos, stats, mapaDataUrl, autor }) {
 
     // ── Utilidades internas ──────────────────────────────────
@@ -60,14 +62,13 @@ export function construirDocumento({ datos, stats, mapaDataUrl, autor }) {
 
             <div style="background:#f8fafc; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
                 <div style="font-size:11px; font-weight:bold; color:#0f766e; margin-bottom:10px;">
-                    PESO DE LAS VARIABLES EN EL MODELO
+                    APORTE DE CADA DIMENSIÓN
                 </div>
                 ${barras}
                 <div style="font-size:8px; color:#64748b; line-height:1.6; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:8px;">
-                    Cada barra muestra el puntaje SHAP de cada dimensión: cuánto empuja esa condición el resultado del modelo
-                    para este municipio. Los valores están en la escala del modelo y son comparables entre municipios. El puntaje
-                    más alto identifica la condición que más contribuye a la clasificación. La prevalencia del encabezado proviene 
-                    de la base de datos y no es la suma de estos puntajes.
+                    Cada barra muestra el aporte de la dimensión a la prevalencia estimada del municipio, en puntos
+                    porcentuales. La suma de los seis aportes corresponde a la prevalencia estimada por el modelo; la cifra
+                    del encabezado proviene de la base de datos calibrada y puede diferir por la calibración de Platt.
                 </div>
             </div>
         `;
@@ -175,6 +176,90 @@ export function construirDocumento({ datos, stats, mapaDataUrl, autor }) {
                 Documento generado automáticamente por el Sistema de Información Geográfica de Cundinamarca.<br>
                 Información referencial basada en datos cartográficos oficiales del DANE y el IGAC.
                 Prevalencias estimadas con modelo XGBoost calibrado sobre microdatos de la ECV 2025.
+            </div>
+        </div>
+    `;
+}
+export function construirAnexo({ datos, autor }) {
+    if (!datos || !datos.dimensiones) return '';
+
+    const fecha = new Date().toLocaleDateString('es-CO', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const tarjeta = (d) => {
+        const ficha = d.ficha || {};
+        return `
+            <div style="width:354px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:8px; padding:14px 16px; background:#ffffff; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+                    <span style="font-size:12px; font-weight:bold; color:#0f766e;">${d.etiqueta}</span>
+                    <span style="font-size:9px; font-weight:bold; color:#0f172a; white-space:nowrap; margin-left:8px;">
+                        ${d.valor.toFixed(2)} pts · puesto ${d.puesto}
+                    </span>
+                </div>
+                <div style="font-size:9.5px; color:#475569; line-height:1.65;">
+                    <strong style="color:#0f172a;">Qué mide.</strong> ${ficha.queMide || ''}
+                </div>
+                <div style="font-size:9.5px; color:#475569; line-height:1.65; margin-top:5px;">
+                    <strong style="color:#0f172a;">Por qué afecta.</strong> ${ficha.porQue || ''}
+                </div>
+                ${ficha.evidencia ? `
+                <div style="font-size:8.5px; color:#0f766e; line-height:1.6; margin-top:6px; border-top:1px solid #e2e8f0; padding-top:5px;">
+                    <strong>DANE 2024.</strong> ${ficha.evidencia}
+                </div>` : ''}
+            </div>`;
+    };
+
+    const filas = [];
+    for (let i = 0; i < datos.dimensiones.length; i += 2) {
+        const par = datos.dimensiones.slice(i, i + 2);
+        filas.push(`
+            <div style="display:flex; align-items:stretch; margin-bottom:14px;">
+                <div style="margin-right:10px;">${tarjeta(par[0])}</div>
+                ${par[1] ? tarjeta(par[1]) : ''}
+            </div>`);
+    }
+
+    return `
+        <div style="width:794px; min-height:1123px; padding:34px 38px; background:#ffffff; color:#0f172a; font-family:Arial, Helvetica, sans-serif; box-sizing:border-box; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #0f766e; padding-bottom:12px; margin-bottom:16px;">
+                <div>
+                    <div style="font-size:20px; font-weight:bold; color:#0f766e; line-height:26px;">SIG CUNDINAMARCA</div>
+                    <div style="font-size:11px; color:#475569; margin-top:6px;">
+                        ${datos.nombre} · DIVIPOLA ${datos.divipola}
+                    </div>
+                </div>
+                <div style="font-size:9px; color:#475569; line-height:1.7; text-align:right;">
+                    <strong>Fecha:</strong> ${fecha}<br>
+                    <strong>Autor:</strong> ${autor}
+                </div>
+            </div>
+
+            <div style="font-size:16px; font-weight:bold; color:#0f172a; margin-bottom:8px;">
+                ¿Cómo aporta cada dimensión a la inseguridad alimentaria?
+            </div>
+
+            <div style="font-size:9.5px; color:#475569; line-height:1.75; margin-bottom:16px;">
+                La inseguridad alimentaria no depende solo de la comida disponible: depende de las condiciones en que el
+                hogar vive, de lo que puede comprar, de su estado de salud, de su nivel educativo, de su composición y de
+                los choques que enfrenta. El modelo estima una probabilidad por hogar y SHAP reparte esa probabilidad entre
+                seis dimensiones. Los valores de cada ficha corresponden a este municipio y se expresan en puntos de prevalencia.
+            </div>
+
+            <div style="display:flex; flex-direction:column;">
+                ${filas.join('')}
+            </div>
+
+            <div style="margin-top:14px; background:#f0fdfa; border-left:3px solid #0f766e; border-radius:6px; padding:12px 14px; font-size:9px; color:#334155; line-height:1.65;">
+                <strong style="color:#0f766e;">Cómo leer esta página.</strong> Los puntos indican cuánto aporta cada
+                dimensión a la prevalencia estimada del municipio; el puesto 1 es la dimensión que más contribuye. Las
+                cifras DANE corresponden al total nacional de 2024 y sirven como referencia: no son el valor del municipio.
+            </div>
+
+            <div style="margin-top:auto; border-top:1px solid #e2e8f0; padding-top:8px; font-size:7.5px; color:#64748b; line-height:1.6;">
+                <strong>Fuente:</strong> ${FUENTE_ENCV.texto}<br>
+                <span style="color:#0f766e;">${FUENTE_ENCV.url}</span><br>
+                Las cifras describen asociaciones poblacionales; no prueban relaciones causales.
             </div>
         </div>
     `;
