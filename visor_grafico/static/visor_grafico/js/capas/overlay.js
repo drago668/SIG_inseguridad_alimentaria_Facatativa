@@ -69,7 +69,7 @@ function abrirModalDimensiones() {
     } else {
         filas.forEach(f => {
             html += `
-                <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100">
                     <span class="text-sm text-slate-700">${f.etiqueta}</span>
                     <span class="text-xs font-semibold text-teal-800">${f.valor.toFixed(2)} pts SHAP · puesto ${f.puesto}</span>
                 </div>`;
