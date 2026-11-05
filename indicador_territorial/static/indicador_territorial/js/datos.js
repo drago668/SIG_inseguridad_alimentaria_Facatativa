@@ -1,5 +1,5 @@
 import { URLS, RUTAS_CSV } from './config.js';
-import { actualizarRadares, actualizarValidacion } from './graficos.js';
+import { actualizarRadares, actualizarValidacion, actualizarRadarVariables } from './graficos.js';
 
 // Estado del tablero
 export let datosZonalesCompletos = [];
@@ -148,6 +148,7 @@ export function procesarMunicipio(divipolaSeleccionado) {
 
     actualizarKpis(regUrb, regRur);
     actualizarRadares(regUrb, regRur);
+    actualizarRadarVariables(regUrb, regRur);
     actualizarValidacion();
 }
 

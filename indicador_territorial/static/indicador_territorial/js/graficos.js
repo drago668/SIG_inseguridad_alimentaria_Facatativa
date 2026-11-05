@@ -7,8 +7,81 @@ let chartValidacion = null;
 
 const LABELS_DIMENSIONES = ['Salud', 'Vivienda', 'Trabajo', 'Educación', 'Demografía', 'Desastres'];
 
+let chartRadarVariables = null;
+let zonaDesgloseActiva = 'Urbana';
+
+export function fijarZonaDesglose(zona) {
+    zonaDesgloseActiva = zona === 'Rural' ? 'Rural' : 'Urbana';
+    const sel = document.getElementById('selector-zona-desglose');
+    if (sel) sel.value = zonaDesgloseActiva;
+}
+
+function num(v) { const n = Number(v); return isFinite(n) ? n : 0; }
+function absNum(v) { return Math.abs(num(v)); }
+
+function datosDesglose() {
+    const urb = datosMunicipioActual.urbano;
+    const rur = datosMunicipioActual.rural;
+    return zonaDesgloseActiva === 'Rural' ? (rur || urb) : (urb || rur);
+}
+
+function construirVariablesPorDimension(reg) {
+    if (!reg) return {
+        "Vivienda y Servicios": { labels: ["Agua y saneamiento", "Nevera", "Peso dimensión"], data: [0,0,0] },
+        "Trabajo e Ingresos": { labels: ["Desempleo", "Peso dimensión", "Aporte Trabajo (pts)"], data: [0,0,0] },
+        "Salud y Discapacidad": { labels: ["Afiliación a salud", "Peso dimensión", "Aporte Salud (pts)"], data: [0,0,0] },
+        "Educación": { labels: ["Subsidio escolar (PAE)", "Peso dimensión", "Aporte Educación (pts)"], data: [0,0,0] },
+        "Demografía": { labels: ["Jefatura femenina", "Hogar hacinado", "Peso dimensión"], data: [0,0,0] },
+        "Desastres": { labels: ["Aporte Desastres (pts)", "Peso dimensión"], data: [0,0] },
+    };
+    return {
+        "Vivienda y Servicios": { 
+            labels: ["Agua y saneamiento", "Nevera", "Peso dimensión"],
+            data: [absNum(reg.shap_agua_saneamiento), absNum(reg.shap_nevera), num(reg.Vivienda_y_Servicios)*20]
+        },
+        "Trabajo e Ingresos": {
+            labels: ["Desempleo", "Peso dimensión", "Aporte Trabajo (pts)"],
+            data: [absNum(reg.shap_desempleo), num(reg.Trabajo_e_Ingresos)*20, num(reg.aporte_Trabajo_e_Ingresos)]
+        },
+        "Salud y Discapacidad": {
+            labels: ["Afiliación a salud", "Peso dimensión", "Aporte Salud (pts)"],
+            data: [absNum(reg.shap_salud), num(reg.Salud_y_Discapacidad)*20, num(reg.aporte_Salud_y_Discapacidad)]
+        },
+        "Educación": {
+            labels: ["Subsidio escolar (PAE)", "Peso dimensión", "Aporte Educación (pts)"],
+            data: [absNum(reg.shap_educacion), num(reg.Educacion)*20, num(reg.aporte_Educacion)]
+        },
+        "Demografía": {
+            labels: ["Jefatura femenina", "Hogar hacinado", "Peso dimensión"],
+            data: [num(reg.pct_jefatura_femenina)*10, num(reg.pct_hogar_hacinado)*100, num(reg.Demografia)*20]
+        },
+        "Desastres": {
+            labels: ["Aporte Desastres (pts)", "Peso dimensión"],
+            data: [num(reg.aporte_Desastres), num(reg.Desastres)*20]
+        },
+    };
+}
+
+const PROMPT_IA_RADAR = `Sos un asistente que explica visualizaciones de un Sistema de Información Geográfica (SIG) de inseguridad alimentaria.
+
+El usuario te envió la captura de un radar (gráfico de ejes radiales) del dashboard del SIG Facatativá (Cundinamarca).
+
+Contexto técnico:
+- El radar desglosa, para una dimensión elegida, el peso de cada variable que la compone.
+- Los datos provienen de la Encuesta Nacional de Calidad de Vida (ECV) del DANE, Anexo FIES 2024.
+- Los valores son aportes SHAP (Shapley Additive Explanations) calculados con un modelo XGBoost, calibrados con ajuste Platt.
+- El área ideal es toda la escala en cero: ningún factor de riesgo.
+
+Explicá, en lenguaje sencillo y paso a paso:
+1. Cómo leer el radar (ejes, variables, valores).
+2. Qué significa que una variable esté en un valor alto o bajo.
+3. Cómo interpretar el área ideal (ceros).
+4. Qué significa todo esto para la inseguridad alimentaria en el municipio.`;
+
+
 export function inicializarGraficos() {
     inicializarRadares();
+    inicializarRadarVariables();
     inicializarGraficoImpacto();
     inicializarValidacion();
 }
@@ -249,4 +322,132 @@ export function actualizarValidacion() {
 
     const titulo = document.getElementById('titulo-validacion');
     if (titulo) titulo.textContent = `Realidad vs Modelo — ${datosMunicipioActual.nombreMunicipio}`;
+}
+
+function inicializarRadarVariables() {
+    const canvas = document.getElementById('radarVariables');
+    if (!canvas) return;
+
+    const dimension = document.getElementById('selector-dimension-desglose')?.value || "Vivienda y Servicios";
+    const vars = construirVariablesPorDimension(datosDesglose());
+    const selectorZona = document.getElementById('selector-zona-desglose');
+    if (selectorZona) {
+        zonaDesgloseActiva = selectorZona.value === 'Rural' ? 'Rural' : 'Urbana';
+        selectorZona.addEventListener('change', () => {
+            zonaDesgloseActiva = selectorZona.value === 'Rural' ? 'Rural' : 'Urbana';
+            actualizarRadarVariables(datosMunicipioActual.urbano, datosMunicipioActual.rural);
+        });
+    }
+
+    chartRadarVariables = new Chart(canvas.getContext('2d'), {
+        type: 'radar',
+        data: {
+            labels: vars[dimension]?.labels || [],
+            datasets: [{
+                label: dimension,
+                data: vars[dimension]?.data || [],
+                backgroundColor: 'rgba(20, 184, 166, 0.25)',
+                borderColor: '#0d9488',
+                pointBackgroundColor: '#0f766e',
+                pointBorderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    min: 0,
+                    suggestedMax: 10,
+                    ticks: { backdropColor: 'transparent', font: { size: 9 }, color: '#64748b' },
+                    grid: { color: '#e2e8f0' },
+                    angleLines: { color: '#cbd5e1' },
+                    pointLabels: { font: { size: 11, weight: 'bold' }, color: '#334155' }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const val = (typeof ctx.raw === 'number' && isFinite(ctx.raw)) ? ctx.raw : 0;
+                            return ` Peso SHAP: ${val.toFixed(2)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const btnToggle = document.getElementById('btn-toggle-desglose');
+    const panel = document.getElementById('panel-desglose-dimension');
+    if (btnToggle && panel) {
+        btnToggle.addEventListener('click', () => {
+            panel.classList.toggle('hidden');
+            btnToggle.textContent = panel.classList.contains('hidden')
+                ? 'Ver composición de la dimensión'
+                : 'Ocultar composición de la dimensión';
+
+            if (!panel.classList.contains('hidden') && chartRadarVariables) {
+                actualizarRadarVariables(datosMunicipioActual.urbano, datosMunicipioActual.rural);
+                chartRadarVariables.resize();
+            }
+        });
+    }
+
+    const selector = document.getElementById('selector-dimension-desglose');
+    if (selector) {
+        selector.addEventListener('change', () => {
+            const dim = selector.value;
+            const vars2 = construirVariablesPorDimension(datosDesglose());
+            chartRadarVariables.data.labels = vars2[dim]?.labels || [];
+            chartRadarVariables.data.datasets[0].label = dim;
+            chartRadarVariables.data.datasets[0].data = vars2[dim]?.data || [];
+            chartRadarVariables.update();
+        });
+    }
+
+    const btnCopiar = document.getElementById('btn-copiar-prompt-ia');
+    const mensaje = document.getElementById('mensaje-prompt-ia');
+    if (btnCopiar) {
+        btnCopiar.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(PROMPT_IA_RADAR);
+            if (mensaje) {
+                mensaje.classList.remove('hidden');
+                setTimeout(() => mensaje.classList.add('hidden'), 3000);
+            }
+        });
+    }
+
+    const btnExplicar = document.getElementById('btn-explicar-ia');
+    if (btnExplicar) {
+        btnExplicar.addEventListener('click', async () => {
+            const contenedor = document.getElementById('contenedor-captura-radar');
+            const dim = document.getElementById('selector-dimension-desglose')?.value || 'dimension';
+            if (contenedor && window.html2canvas) {
+                const canvasImg = await html2canvas(contenedor, { scale: 2, backgroundColor: '#ffffff' });
+                const link = document.createElement('a');
+                link.download = `radar_${dim.replaceAll(' ', '_')}.png`;
+                link.href = canvasImg.toDataURL('image/png');
+                link.click();
+            }
+            await navigator.clipboard.writeText(PROMPT_IA_RADAR);
+            if (mensaje) {
+                mensaje.classList.remove('hidden');
+                setTimeout(() => mensaje.classList.add('hidden'), 3000);
+            }
+        });
+    }
+}
+
+export function actualizarRadarVariables(regUrb, regRur) {
+    if (!chartRadarVariables) return;
+    const dim = document.getElementById('selector-dimension-desglose')?.value || "Vivienda y Servicios";
+    const reg = zonaDesgloseActiva === 'Rural' ? (regRur || regUrb) : (regUrb || regRur);
+    const vars = construirVariablesPorDimension(reg);
+    chartRadarVariables.data.labels = vars[dim]?.labels || [];
+    chartRadarVariables.data.datasets[0].label = dim + ' (' + zonaDesgloseActiva + ')';
+    chartRadarVariables.data.datasets[0].data = vars[dim]?.data || [];
+    chartRadarVariables.update();
 }

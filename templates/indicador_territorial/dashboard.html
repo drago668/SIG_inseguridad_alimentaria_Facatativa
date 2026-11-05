@@ -281,6 +281,69 @@
             </div>
         </section>
 
+
+<!-- ══════ PANEL DESGLOSE: PESO DE VARIABLES POR DIMENSIÓN ══════ -->
+<section class="mt-5">
+    <button id="btn-toggle-desglose" type="button" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-3 px-4 rounded-2xl shadow-sm transition-all">
+        Ver composición de la dimensión
+    </button>
+
+    <div id="panel-desglose-dimension" class="hidden mt-4 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 md:p-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 mb-4 gap-3">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Peso de variables por dimensión</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Desglose de variables dentro de la dimensión seleccionada</p>
+            </div>
+            <div class="flex gap-2">
+                <select id="selector-zona-desglose" class="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 p-2.5 shadow-sm outline-none">
+                    <option value="Urbana" selected>Urbana</option>
+                    <option value="Rural">Rural</option>
+                </select>
+                <select id="selector-dimension-desglose" class="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 p-2.5 shadow-sm outline-none">
+                    <option value="Vivienda y Servicios" selected>Vivienda y Servicios</option>
+                    <option value="Trabajo e Ingresos">Trabajo e Ingresos</option>
+                    <option value="Salud y Discapacidad">Salud y Discapacidad</option>
+                    <option value="Educación">Educación</option>
+                    <option value="Demografía">Demografía</option>
+                    <option value="Desastres">Desastres</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="bg-teal-50 border border-teal-100 rounded-xl p-3.5 mb-4">
+            <p class="text-[11px] font-bold text-teal-800 mb-1">Cómo leer este radar</p>
+            <p class="text-[11px] text-teal-700 leading-snug">
+                Este radar muestra el peso de cada variable dentro de la dimensión elegida.
+                El área ideal es que todo tienda a <strong>cero</strong>, porque eso significa ausencia de factores de riesgo.
+                Mientras más se aleje del centro, mayor es el impacto de esa variable sobre la inseguridad alimentaria.
+            </p>
+        </div>
+
+        <div id="contenedor-captura-radar" class="relative h-72 md:h-80 w-full flex items-center justify-center">
+            <canvas id="radarVariables"></canvas>
+        </div>
+
+        <div class="mt-5 border-t border-slate-100 pt-4">
+            <p class="text-sm md:text-base font-extrabold text-slate-900 text-center mb-1">
+                ¿No entendés el radar? Descargá la captura y pasásela a tu IA de confianza (ChatGPT, Gemini, Claude, etc.).
+            </p>
+            <p class="text-[11px] text-slate-400 text-center mb-3">
+                Te vamos a descargar la imagen y copiar un prompt con contexto para que la IA te lo explique paso a paso.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                <button id="btn-explicar-ia" type="button" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all">
+                    Descargar captura y copiar prompt
+                </button>
+                <button id="btn-copiar-prompt-ia" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-4 rounded-xl transition-all">
+                    Copiar prompt para la IA
+                </button>
+            </div>
+            <p id="mensaje-prompt-ia" class="hidden text-center text-[11px] font-semibold text-teal-700 mt-2">Prompt copiado. Pégalo en tu IA junto con la imagen descargada.</p>
+        </div>
+    </div>
+</section>
+
+
 <!-- ══════ SECCIÓN: VALIDACIÓN Y CONFIABILIDAD DEL MODELO ══════ -->
 <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
