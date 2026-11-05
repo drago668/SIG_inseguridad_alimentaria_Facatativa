@@ -5,6 +5,96 @@ let mapaDimensiones = new Map();
 let capaCoropletas = null;
 let municipioSeleccionadoActual = null;
 
+const CAMPOS_DIMENSIONES = [
+    { campo: 'aporte_Vivienda_y_Servicios', etiqueta: 'Vivienda y Servicios' },
+    { campo: 'aporte_Trabajo_e_Ingresos', etiqueta: 'Trabajo e Ingresos' },
+    { campo: 'aporte_Salud_y_Discapacidad', etiqueta: 'Salud y Discapacidad' },
+    { campo: 'aporte_Educacion', etiqueta: 'Educación' },
+    { campo: 'aporte_Demografia', etiqueta: 'Demografía' },
+    { campo: 'aporte_Desastres', etiqueta: 'Desastres' },
+];
+
+const CAMPOS_ESPERADOS = CAMPOS_DIMENSIONES.map(d => d.campo);
+
+
+function dimensionesCompletas() {
+    const checks = Array.from(document.querySelectorAll('.chk-dimension'));
+    return CAMPOS_ESPERADOS.every(campo => checks.some(chk => chk.value === campo && chk.checked));
+}
+
+
+function getDimensionesActivas() {
+    const checks = Array.from(document.querySelectorAll('.chk-dimension'));
+    return CAMPOS_DIMENSIONES
+        .filter(d => checks.some(chk => chk.value === d.campo && chk.checked))
+        .map(d => ({ campo: d.campo, etiqueta: d.etiqueta }));
+}
+
+
+function abrirModalDimensiones() {
+    const modal = document.getElementById('modal-dimensiones-shap');
+    const contenedor = document.getElementById('modal-dimensiones-contenido');
+    if (!modal || !contenedor) return;
+
+    if (!municipioSeleccionadoActual) {
+        contenedor.innerHTML = '<p class="text-xs text-slate-400 italic">Seleccione un municipio para ver sus aportes.</p>';
+        modal.classList.remove('hidden');
+        return;
+    }
+
+    const registro = mapaDimensiones.get(String(municipioSeleccionadoActual.divipola).padStart(5, '0')) || null;
+
+    const filas = getDimensionesActivas().map(d => ({
+        campo: d.campo,
+        etiqueta: d.etiqueta,
+        valor: registro && registro[d.campo] !== undefined ? (parseFloat(registro[d.campo]) || 0.0) : 0.0,
+    })).sort((a, b) => b.valor - a.valor);
+
+    filas.forEach((f, i) => { f.puesto = i + 1; });
+
+    const total = filas.reduce((suma, f) => suma + f.valor, 0);
+
+    let html = '';
+    if (municipioSeleccionadoActual) {
+        html += `
+            <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-3">
+                <p class="text-xs text-slate-600"><span class="font-semibold text-slate-800">Municipio:</span> ${municipioSeleccionadoActual.nombre}</p>
+                <p class="text-xs text-slate-600 mt-0.5"><span class="font-semibold text-slate-800">DIVIPOLA:</span> ${municipioSeleccionadoActual.divipola}</p>
+                <p class="text-xs text-slate-600 mt-0.5"><span class="font-semibold text-slate-800">Aporte SHAP acumulado (activas):</span> ${total.toFixed(2)} pts</p>
+            </div>`;
+    }
+
+    if (filas.length === 0) {
+        contenedor.innerHTML = '<p class="text-xs text-slate-400 italic">No hay dimensiones activas para este municipio.</p>';
+    } else {
+        filas.forEach(f => {
+            html += `
+                <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span class="text-sm text-slate-700">${f.etiqueta}</span>
+                    <span class="text-xs font-semibold text-teal-800">${f.valor.toFixed(2)} pts SHAP · puesto ${f.puesto}</span>
+                </div>`;
+        });
+    }
+
+    if (filas.length > 0 && !dimensionesCompletas()) {
+        html += `
+            <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p class="text-[11px] text-amber-700"><strong>Aporte no válido.</strong> Hay dimensiones sin marcar. El valor solo es válido cuando todas las dimensiones están activas.</p>
+            </div>`;
+    }
+
+    contenedor.innerHTML = html;
+    modal.classList.remove('hidden');
+}
+
+
+function cerrarModalDimensiones() {
+    const modal = document.getElementById('modal-dimensiones-shap');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
 
 export function toggleCapaCoropletas(checked) {
     if (capaCoropletas) {
@@ -79,6 +169,9 @@ function actualizarPanelDetalle(nombre, divipola, valor) {
     if (valor === null || valor === undefined) {
         badge.textContent = "Sin datos SHAP";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600";
+    } else if (!dimensionesCompletas()) {
+        badge.textContent = "Aporte no válido";
+        badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700";
     } else if (valor > 40.0) {
         badge.textContent = "Crítico (Aporte SHAP > 40)";
         badge.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700";
@@ -180,6 +273,31 @@ Promise.all([
                 );
             }
         });
+    });
+
+    // Abrir el modal con los aportes SHAP por dimensión del municipio seleccionado
+    const btnVerDimensiones = document.getElementById('btn-ver-dimensiones-shap');
+    const modalDimensiones = document.getElementById('modal-dimensiones-shap');
+    const btnCerrarDimensiones = document.getElementById('btn-cerrar-modal-dimensiones');
+    const btnCerrarDimensionesFooter = document.getElementById('modal-dimensiones-cerrar');
+
+    if (btnVerDimensiones) {
+        btnVerDimensiones.addEventListener('click', abrirModalDimensiones);
+    }
+
+    if (btnCerrarDimensiones) {
+        btnCerrarDimensiones.addEventListener('click', cerrarModalDimensiones);
+    }
+    if (btnCerrarDimensionesFooter) {
+        btnCerrarDimensionesFooter.addEventListener('click', cerrarModalDimensiones);
+    }
+    if (modalDimensiones) {
+        modalDimensiones.addEventListener('click', (e) => {
+            if (e.target === modalDimensiones) cerrarModalDimensiones();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') cerrarModalDimensiones();
     });
 });
 

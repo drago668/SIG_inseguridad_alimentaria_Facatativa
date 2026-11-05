@@ -446,6 +446,29 @@
             <p class="text-[11px] text-slate-400 italic">
                 * Aporte SHAP acumulado (suma de factores de riesgo). Para prevalencia real calibrada, ver Dashboard DSS.
             </p>
+
+            <button id="btn-ver-dimensiones-shap" type="button" class="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 active:scale-95 transition-all duration-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1">
+                <svg class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13h8V3H3v10zm0 4h8v-6H3v6zm0 4h8v-6H3v6zM16 8h2V3h-2v5zm0 5h2V11h-2v5zm0 5h2v-8h-2v8z"></path>
+                </svg>
+                <span>Ver aportes SHAP por dimensión</span>
+            </button>
+        </div>
+
+        <!-- Modal: Aportes SHAP por Dimensión del Municipio Seleccionado -->
+        <div id="modal-dimensiones-shap" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <h3 class="text-base font-bold text-teal-800">Aportes SHAP por Dimensión</h3>
+                    <button type="button" id="btn-cerrar-modal-dimensiones" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+                </div>
+                <div id="modal-dimensiones-contenido" class="overflow-y-auto pr-1 text-sm text-slate-700">
+                    <p class="text-xs text-slate-400 italic">Seleccione un municipio para ver sus aportes.</p>
+                </div>
+                <div class="pt-3 border-t border-slate-100 mt-2 flex justify-end">
+                    <button type="button" id="modal-dimensiones-cerrar" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold">Cerrar</button>
+                </div>
+            </div>
         </div>
 
         <!-- Leyenda Cartográfica Flotante DANE -->
