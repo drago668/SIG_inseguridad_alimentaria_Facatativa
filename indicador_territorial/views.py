@@ -121,7 +121,10 @@ def obtener_dimensiones_zonales(request):
             'pct_jefatura_femenina', 'pct_hogar_hacinado',
             
             # Micro SHAP (Síntomas y Simuladores de Intervención)
-            'shap_desempleo', 'shap_nevera', 'shap_agua_saneamiento', 'shap_educacion', 'shap_salud'
+            'shap_desempleo', 'shap_nevera', 'shap_agua_saneamiento', 'shap_educacion', 'shap_salud',
+
+            # Peso por variable cruda (Radar desglose)
+            *[c for c in df_zonal.columns if c.startswith('var_')]
         ]
 
         # Seleccionar las columnas disponibles en el CSV

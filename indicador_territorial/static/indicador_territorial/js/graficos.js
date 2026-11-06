@@ -1,4 +1,5 @@
 import { datosMunicipioActual } from './datos.js';
+import { DESCRIPCIONES_VARIABLES } from './descripciones_variables.js';
 
 let chartRadarUrbano = null;
 let chartRadarRural = null;
@@ -35,29 +36,29 @@ function construirVariablesPorDimension(reg) {
         "Desastres": { labels: ["Aporte Desastres (pts)", "Peso dimensión"], data: [0,0] },
     };
     return {
-        "Vivienda y Servicios": { 
-            labels: ["Agua y saneamiento", "Nevera", "Peso dimensión"],
-            data: [absNum(reg.shap_agua_saneamiento), absNum(reg.shap_nevera), num(reg.Vivienda_y_Servicios)*20]
+        "Vivienda y Servicios": {
+            labels: ["Nevera (P1077S2)", "Paredes (P4005)", "Pisos (P4015)", "Tipo vivienda (P1070)", "Agua (P8520)", "Obtención agua (P8530)", "Tratamiento agua (P5069)", "Combustible (P8536)"],
+            data: [num(reg.var_P1077S2), num(reg.var_P4005), num(reg.var_P4015), num(reg.var_P1070), num(reg.var_P8520), num(reg.var_P8530), num(reg.var_P5069), num(reg.var_P8536)]
         },
         "Trabajo e Ingresos": {
-            labels: ["Desempleo", "Peso dimensión", "Aporte Trabajo (pts)"],
-            data: [absNum(reg.shap_desempleo), num(reg.Trabajo_e_Ingresos)*20, num(reg.aporte_Trabajo_e_Ingresos)]
+            labels: ["Actividad (P6240)", "Horario (P8624)", "Ingreso (P7250)", "Cotización (P6920)", "Formación (P6990)", "Tamaño empresa (P8632)"],
+            data: [num(reg.var_P6240), num(reg.var_P8624), num(reg.var_P7250), num(reg.var_P6920), num(reg.var_P6990), num(reg.var_P8632)]
         },
         "Salud y Discapacidad": {
-            labels: ["Afiliación a salud", "Peso dimensión", "Aporte Salud (pts)"],
-            data: [absNum(reg.shap_salud), num(reg.Salud_y_Discapacidad)*20, num(reg.aporte_Salud_y_Discapacidad)]
+            labels: ["Régimen (P6100)", "Dificultades (P1906)", "Afiliación (P6090)", "Razón no afiliación (P768)"],
+            data: [num(reg.var_P6100), num(reg.var_P1906), num(reg.var_P6090), num(reg.var_P768)]
         },
         "Educación": {
-            labels: ["Subsidio escolar (PAE)", "Peso dimensión", "Aporte Educación (pts)"],
-            data: [absNum(reg.shap_educacion), num(reg.Educacion)*20, num(reg.aporte_Educacion)]
+            labels: ["Alfabetismo (P6160)", "Asistencia (P8586)", "Nivel (P8587)", "Subsidio (P8612)"],
+            data: [num(reg.var_P6160), num(reg.var_P8586), num(reg.var_P8587), num(reg.var_P8612)]
         },
         "Demografía": {
-            labels: ["Jefatura femenina", "Hogar hacinado", "Peso dimensión"],
-            data: [num(reg.pct_jefatura_femenina)*10, num(reg.pct_hogar_hacinado)*100, num(reg.Demografia)*20]
+            labels: ["Tamaño hogar", "Sexo (P6020)", "Edad", "Etnia (P3039)"],
+            data: [num(reg.var_CANT_PERSONAS_HOGAR), num(reg.var_P6020), num(reg.var_P6040), num(reg.var_P3039)]
         },
         "Desastres": {
-            labels: ["Aporte Desastres (pts)", "Peso dimensión"],
-            data: [num(reg.aporte_Desastres), num(reg.Desastres)*20]
+            labels: ["Evento (P3173)", "Efectos (P3174)", "Pérdidas (P4065)"],
+            data: [num(reg.var_P3173), num(reg.var_P3174), num(reg.var_P4065)]
         },
     };
 }
@@ -372,7 +373,12 @@ function inicializarRadarVariables() {
                     callbacks: {
                         label: (ctx) => {
                             const val = (typeof ctx.raw === 'number' && isFinite(ctx.raw)) ? ctx.raw : 0;
-                            return ` Peso SHAP: ${val.toFixed(2)}`;
+                            const match = ctx.label.match(/\(([^)]+)\)/);
+                            const codigo = match ? match[1] : ctx.label;
+                            const desc = DESCRIPCIONES_VARIABLES[codigo];
+                            return desc
+                                ? ` ${desc.nombre}: ${val.toFixed(2)} - ${desc.descripcion}`
+                                : ` ${ctx.label}: ${val.toFixed(2)}`;
                         }
                     }
                 }
